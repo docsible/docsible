@@ -1,0 +1,68 @@
+{{- role.existing_readme -}}
+
+## Generated Information
+## {{ role.name }}
+Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
+
+### Defaults
+{% if role.defaults -%}
+{% for key, value in role.defaults.items() -%}
+- **{{ key }}**: `{{ value }}`
+{% endfor -%}
+{%- else -%}
+No defaults available.
+{%- endif %}
+
+### Vars
+{% if role.vars -%}
+{% for key, value in role.vars.items() -%}
+- **{{ key }}**: `{{ value }}`
+{% endfor -%}
+{%- else -%}
+No vars available.
+{%- endif %}
+
+### Tasks
+{%- if role.tasks|length == 1 and role.tasks[0]['file'] == 'main.yml' %}
+| Name | Module |
+| ---- | ------ |
+{%- for task in role.tasks[0]['tasks'] %}
+| {{ task.name }} | {{ task.module }} |
+{%- endfor %}
+{%- else %}
+{% for taskfile in role.tasks %}
+#### File: {{ taskfile.file }}
+| Name | Module |
+| ---- | ------ |
+{%- for task in taskfile.tasks %}
+| {{ task.name }} | {{ task.module }} |
+{%- endfor %}
+{% endfor %}
+{%- endif %}
+
+{% if role.playbook -%}
+## Playbook
+```yml
+{{ role.playbook }}
+```
+{%- endif %}
+
+{% if role.meta.galaxy_info -%}
+## Author Information
+{{ role.meta.galaxy_info.author or 'Unknown Author' }}
+
+#### License
+{{ role.meta.galaxy_info.license or 'No license specified.' }}
+
+#### Minimum Ansible Version
+{{ role.meta.galaxy_info.min_ansible_version or 'No minimum version specified.' }}
+
+#### Platforms
+{% if role.meta.galaxy_info.platforms -%}
+{% for platform in role.meta.galaxy_info.platforms -%}
+- **{{ platform.name }}**: {{ ", ".join(platform.versions) }}
+{% endfor -%}
+{%- else -%}
+No platforms specified.
+{%- endif %}
+{%- endif %}
