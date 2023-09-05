@@ -39,6 +39,10 @@ docsible --role /path/to/ansible/role --playbook /path/to/playbook.yml
 ```
 
 ```bash
+docsible --role /path/to/ansible/role # without include a playbook into readme
+```
+
+```bash
 $ docsible --help
 Usage: docsible [OPTIONS]
 
