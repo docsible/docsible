@@ -2,7 +2,7 @@
 
 ## About
 
-Docsible is a command-line interface (CLI) written in Python that automates the documentation of Ansible roles. It generates a Markdown-formatted README file for each role by scanning the Ansible YAML files.
+Docsible is a command-line interface (CLI) written in Python that automates the documentation of Ansible roles. It generates a Markdown-formatted README file for role by scanning the Ansible YAML files.
 
 ## Table of Contents
 
