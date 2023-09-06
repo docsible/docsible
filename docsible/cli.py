@@ -15,19 +15,29 @@ Description: Not available.
 {%- endif %}
 
 ### Defaults
-{% if role.defaults -%}
-{% for key, value in role.defaults.items() -%}
-- **{{ key }}**: `{{ value }}`
+{% if role.defaults|length > 0 -%}
+{% for defaultfile in role.defaults %}
+#### File: {{ defaultfile.file }}
+| Var | Value | Required | Title |
+| --- | --- | --- | --- |
+{% for key, details in defaultfile.data.items() -%}
+| {{ key }} | {{ details.value }} | {{ details.required }} | {{ details.title }} |
 {% endfor -%}
+{% endfor %}
 {%- else -%}
 No defaults available.
 {%- endif %}
 
 ### Vars
-{% if role.vars -%}
-{% for key, value in role.vars.items() -%}
-- **{{ key }}**: `{{ value }}`
+{% if role.vars|length > 0 -%}
+{% for varsfile in role.vars %}
+#### File: {{ varsfile.file }}
+| Var | Value | Required | Title |
+| --- | --- | --- | --- |
+{% for key, details in varsfile.data.items() -%}
+| {{ key }} | {{ details.value }} | {{ details.required }} | {{ details.title }} |
 {% endfor -%}
+{% endfor %}
 {%- else -%}
 No vars available.
 {%- endif %}
@@ -82,36 +92,73 @@ No platforms specified.
 env = Environment(loader=BaseLoader)
 env.from_string(static_template)
 
-# Function to load a YAML file
-def load_yaml_file(filepath):
+
+def load_yaml_generic(filepath):
     try:
         with open(filepath, 'r') as f:
-            lines = f.readlines()
-
-        new_lines = []
-        skip = False
-        for line in lines:
-            stripped_line = line.strip()
-            if skip:
-                if stripped_line == "":
-                    skip = False
-                continue
-
-            if "!vault |" in stripped_line:
-                parts = stripped_line.split(":")
-                var_name = parts[0].strip()
-                new_lines.append(f"{var_name}: ENCRYPTED_WITH_ANSIBLE_VAULT\n")
-                skip = True
-            else:
-                new_lines.append(line)
-
-        data = yaml.safe_load(''.join(new_lines))
-        
+            data = yaml.safe_load(f)
         return data
     except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
         print(f"Error loading {filepath}: {e}")
         return None
 
+def load_yaml_file_custom(filepath):
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:  # Specify encoding for UTF-8
+            lines = f.readlines()
+
+        collected_data = {}
+        current_title = None
+        current_required = None
+        skip = False
+        for line in lines:
+            stripped_line = line.strip()
+            
+            if skip:
+                if stripped_line == "":
+                    skip = False
+                continue
+
+            if "# title:" in stripped_line:
+                current_title = stripped_line.split(":", 1)[1].strip()
+            elif "# required:" in stripped_line:
+                current_required = stripped_line.split(":", 1)[1].strip().lower() == 'true'
+            elif ": " in stripped_line:
+                parts = stripped_line.split(":")
+                var_name = parts[0].strip()
+                value = parts[1].strip()
+                if "!vault |" in value:
+                    value = 'ENCRYPTED_WITH_ANSIBLE_VAULT'
+                    skip = True
+                collected_data[var_name] = {
+                    'value': value,
+                    'title': current_title,
+                    'required': current_required
+                }
+                # Reset current_title and current_required for the next variable
+                current_title = None
+                current_required = None
+            else:
+                # Reset current_title and current_required if there's a new section or other unhandled lines
+                current_title = None
+                current_required = None
+
+        return collected_data
+    except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
+        print(f"Error loading {filepath}: {e}")
+        return None
+
+
+# Function to load all YAML files from a given directory and include file names
+def load_yaml_files_from_dir_custom(dir_path):
+    collected_data = []
+    if os.path.exists(dir_path) and os.path.isdir(dir_path):
+        for yaml_file in os.listdir(dir_path):
+            if yaml_file.endswith(".yml"):
+                file_data = load_yaml_file_custom(os.path.join(dir_path, yaml_file))
+                if file_data:
+                    collected_data.append({'file': yaml_file, 'data': file_data})
+    return collected_data
 
 # Function to process tasks for special keys like 'block'
 def process_special_task_keys(task):
@@ -160,15 +207,15 @@ def document_role(role_path, playbook_content):
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
 
-    defaults_data = load_yaml_file(os.path.join(role_path, "defaults", "main.yml")) or {}
-    vars_data = load_yaml_file(os.path.join(role_path, "vars", "main.yml")) or {}
+    defaults_data = load_yaml_files_from_dir_custom(os.path.join(role_path, "defaults")) or []
+    vars_data = load_yaml_files_from_dir_custom(os.path.join(role_path, "vars")) or []
 
     role_info = {
         "name": role_name,
         "defaults": defaults_data,
         "vars": vars_data,
         "tasks": [],
-        "meta": load_yaml_file(meta_path) or {},
+        "meta": load_yaml_generic(meta_path) or {},
         "playbook": playbook_content
     }
 
@@ -178,10 +225,16 @@ def document_role(role_path, playbook_content):
     if os.path.exists(tasks_dir) and os.path.isdir(tasks_dir):
         for task_file in os.listdir(tasks_dir):
             if task_file.endswith(".yml"):
-                tasks_data = load_yaml_file(os.path.join(tasks_dir, task_file))
+                tasks_data = load_yaml_generic(os.path.join(tasks_dir, task_file))
                 if tasks_data:
                     task_info = {'file': task_file, 'tasks': []}
+                    if not isinstance(tasks_data, list):
+                        print(f"Unexpected data type for tasks in {task_file}. Skipping.")
+                        continue
                     for task in tasks_data:
+                        if not isinstance(task, dict):
+                            print(f"Skipping unexpected data in {task_file}: {task}")
+                            continue
                         if task and len(task.keys()) > 0:
                             processed_tasks = process_special_task_keys(task)
                             task_info['tasks'].extend(processed_tasks)
