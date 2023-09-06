@@ -2,12 +2,85 @@
 import os
 import yaml
 import click
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, BaseLoader
 
-# Determine the absolute path to the directory containing this file
-base_dir = os.path.abspath(os.path.dirname(__file__))
+static_template = """{{- role.existing_readme -}}
 
-env = Environment(loader=FileSystemLoader(os.path.join(base_dir, 'templates')))
+# Generated Documentation
+## {{ role.name }}
+{% if role.meta and role.meta.galaxy_info -%}
+Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
+{% else %}
+Description: Not available.
+{%- endif %}
+
+### Defaults
+{% if role.defaults -%}
+{% for key, value in role.defaults.items() -%}
+- **{{ key }}**: `{{ value }}`
+{% endfor -%}
+{%- else -%}
+No defaults available.
+{%- endif %}
+
+### Vars
+{% if role.vars -%}
+{% for key, value in role.vars.items() -%}
+- **{{ key }}**: `{{ value }}`
+{% endfor -%}
+{%- else -%}
+No vars available.
+{%- endif %}
+
+### Tasks
+{%- if role.tasks|length == 1 and role.tasks[0]['file'] == 'main.yml' %}
+| Name | Module |
+| ---- | ------ |
+{%- for task in role.tasks[0]['tasks'] %}
+| {{ task.name }} | {{ task.module }} |
+{%- endfor %}
+{%- else %}
+{% for taskfile in role.tasks %}
+#### File: {{ taskfile.file }}
+| Name | Module |
+| ---- | ------ |
+{%- for task in taskfile.tasks %}
+| {{ task.name }} | {{ task.module }} |
+{%- endfor %}
+{% endfor %}
+{%- endif %}
+
+{% if role.playbook -%}
+## Playbook
+```yml
+{{ role.playbook }}
+```
+{%- endif %}
+
+{% if role.meta.galaxy_info -%}
+## Author Information
+{{ role.meta.galaxy_info.author or 'Unknown Author' }}
+
+#### License
+{{ role.meta.galaxy_info.license or 'No license specified.' }}
+
+#### Minimum Ansible Version
+{{ role.meta.galaxy_info.min_ansible_version or 'No minimum version specified.' }}
+
+#### Platforms
+{% if role.meta.galaxy_info.platforms -%}
+{% for platform in role.meta.galaxy_info.platforms -%}
+- **{{ platform.name }}**: {{ ", ".join(platform.versions) }}
+{% endfor -%}
+{%- else -%}
+No platforms specified.
+{%- endif %}
+{%- endif %}
+"""
+
+# Initialize the Jinja2 Environment
+env = Environment(loader=BaseLoader)
+env.from_string(static_template)
 
 # Function to load a YAML file
 def load_yaml_file(filepath):
@@ -72,8 +145,13 @@ def doc_the_role(role, playbook):
 
     playbook_content = None
     if playbook:
-        with open(playbook, 'r') as f:
-            playbook_content = f.read()
+        try:
+            with open(playbook, 'r') as f:
+                playbook_content = f.read()
+        except FileNotFoundError:
+            print('playbook not found:', playbook)
+        except Exception as e:
+            print('playbook import error:', e)
 
     document_role(role_path, playbook_content)
     
@@ -114,7 +192,8 @@ def document_role(role_path, playbook_content):
 
     role_info["existing_readme"] = ""
 
-    template = env.get_template('readme.jinja2')
+    # Render the static template
+    template = env.from_string(static_template)
     output = template.render(role=role_info)
 
     with open(readme_path, "w") as f:
