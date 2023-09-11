@@ -3,48 +3,22 @@ import os
 import yaml
 import click
 from jinja2 import Environment, BaseLoader
-from docsible.markdown_template import static_template
+from markdown_template import static_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom
+from docsible.utils.special_tasks_keys import process_special_task_keys
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
 env.from_string(static_template)
 
-def process_special_task_keys(task, task_type='task'):
-    tasks = []
-    if 'block' in task:
-        task_name = task.get('name', 'Unnamed_block')
-        task_module = 'block'
-        tasks.append({
-            'name': task_name,
-            'module': task_module,
-            'type': 'block'
-        })
-        for sub_task in task['block']:
-            processed_tasks = process_special_task_keys(sub_task, 'block')
-            tasks.extend(processed_tasks)
-    elif 'rescue' in task:
-        task_name = task.get('name', 'Unnamed_rescue')
-        task_module = 'rescue'
-        tasks.append({
-            'name': task_name,
-            'module': task_module,
-            'type': 'rescue'
-        })
-        for sub_task in task['rescue']:
-            processed_tasks = process_special_task_keys(sub_task, 'rescue')
-            tasks.extend(processed_tasks)
-    else:
-        task_name = task.get('name', 'Unnamed')
-        task_module = list(task.keys())[1] if 'name' in task else list(task.keys())[0]
-        tasks.append({
-            'name': task_name,
-            'module': task_module,
-            'type': task_type
-        })
-    return tasks
-
+def initialize_docsible(docsible_path, default_data):
+    try:
+        with open(docsible_path, 'w') as f:
+            yaml.dump(default_data, f, default_flow_style=False)
+        print(f"Initialized {docsible_path} with default keys.")
+    except Exception as e:
+        print(f"An error occurred while initializing {docsible_path}: {e}")
 
 @click.command()
 @click.option('--role', default='./role', help='Path to the Ansible role directory.')
@@ -80,7 +54,6 @@ def document_role(role_path, playbook_content, generate_graph):
     if os.path.exists(docsible_path):
         docsible_present = True
     else:
-        docsible_present = False
         default_data = {
         'description': '',
         'requester': '',
@@ -94,12 +67,11 @@ def document_role(role_path, playbook_content, generate_graph):
         if not os.path.exists(docsible_path):
             print(f"{docsible_path} not found. Initializing...")
             try:
-                with open(docsible_path, 'w') as f:
-                    yaml.dump(default_data, f, default_flow_style=False)
-                print(f"Initialized {docsible_path} with default keys.")
+                initialize_docsible(docsible_path, default_data)
+                docsible_present = True
             except Exception as e:
                 print(f"An error occurred while initializing {docsible_path}: {e}")
-
+    
     role_info = {
         "name": role_name,
         "defaults": defaults_data,

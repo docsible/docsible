@@ -58,21 +58,22 @@ No vars available.
 
 ### Tasks
 {%- if role.tasks|length == 1 and role.tasks[0]['file'] == 'main.yml' %}
-| Name | Module |
-| ---- | ------ |
+| Name | Module | Condition |
+| ---- | ------ | --------- |
 {%- for task in role.tasks[0]['tasks'] %}
-| {{ task.name }} | {{ task.module }} |
+| {{ task.name }} | {{ task.module }} | {{ task.when or 'N/A' }} |
 {%- endfor %}
 {%- else %}
 {% for taskfile in role.tasks %}
 #### File: {{ taskfile.file }}
-| Name | Module |
-| ---- | ------ |
+| Name | Module | Condition |
+| ---- | ------ | --------- |
 {%- for task in taskfile.tasks %}
-| {{ task.name }} | {{ task.module }} |
+| {{ task.name }} | {{ task.module }} | {{ task.when or 'N/A' }} |
 {%- endfor %}
 {% endfor %}
 {%- endif %}
+
 
 {% if mermaid_code_per_file -%}
 ## Task Flow Graphs
