@@ -3,180 +3,45 @@ import os
 import yaml
 import click
 from jinja2 import Environment, BaseLoader
-
-static_template = """{{- role.existing_readme -}}
-
-# Generated Documentation
-## {{ role.name }}
-{% if role.meta and role.meta.galaxy_info -%}
-Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
-{% else %}
-Description: Not available.
-{%- endif %}
-
-### Defaults
-{% if role.defaults|length > 0 -%}
-{% for defaultfile in role.defaults %}
-#### File: {{ defaultfile.file }}
-| Var | Value | Required | Title |
-| --- | --- | --- | --- |
-{% for key, details in defaultfile.data.items() -%}
-| {{ key }} | {{ details.value }} | {{ details.required }} | {{ details.title }} |
-{% endfor -%}
-{% endfor %}
-{%- else -%}
-No defaults available.
-{%- endif %}
-
-### Vars
-{% if role.vars|length > 0 -%}
-{% for varsfile in role.vars %}
-#### File: {{ varsfile.file }}
-| Var | Value | Required | Title |
-| --- | --- | --- | --- |
-{% for key, details in varsfile.data.items() -%}
-| {{ key }} | {{ details.value }} | {{ details.required }} | {{ details.title }} |
-{% endfor -%}
-{% endfor %}
-{%- else -%}
-No vars available.
-{%- endif %}
-
-### Tasks
-{%- if role.tasks|length == 1 and role.tasks[0]['file'] == 'main.yml' %}
-| Name | Module |
-| ---- | ------ |
-{%- for task in role.tasks[0]['tasks'] %}
-| {{ task.name }} | {{ task.module }} |
-{%- endfor %}
-{%- else %}
-{% for taskfile in role.tasks %}
-#### File: {{ taskfile.file }}
-| Name | Module |
-| ---- | ------ |
-{%- for task in taskfile.tasks %}
-| {{ task.name }} | {{ task.module }} |
-{%- endfor %}
-{% endfor %}
-{%- endif %}
-
-{% if role.playbook -%}
-## Playbook
-```yml
-{{ role.playbook }}
-```
-{%- endif %}
-
-{% if role.meta.galaxy_info -%}
-## Author Information
-{{ role.meta.galaxy_info.author or 'Unknown Author' }}
-
-#### License
-{{ role.meta.galaxy_info.license or 'No license specified.' }}
-
-#### Minimum Ansible Version
-{{ role.meta.galaxy_info.min_ansible_version or 'No minimum version specified.' }}
-
-#### Platforms
-{% if role.meta.galaxy_info.platforms -%}
-{% for platform in role.meta.galaxy_info.platforms -%}
-- **{{ platform.name }}**: {{ ", ".join(platform.versions) }}
-{% endfor -%}
-{%- else -%}
-No platforms specified.
-{%- endif %}
-{%- endif %}
-"""
+from docsible.markdown_template import static_template
+from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
+from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
 env.from_string(static_template)
 
-
-def load_yaml_generic(filepath):
-    try:
-        with open(filepath, 'r') as f:
-            data = yaml.safe_load(f)
-        return data
-    except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
-        print(f"Error loading {filepath}: {e}")
-        return None
-
-def load_yaml_file_custom(filepath):
-    try:
-        with open(filepath, 'r', encoding='utf-8') as f:  # Specify encoding for UTF-8
-            lines = f.readlines()
-
-        collected_data = {}
-        current_title = None
-        current_required = None
-        skip = False
-        for line in lines:
-            stripped_line = line.strip()
-            
-            if skip:
-                if stripped_line == "":
-                    skip = False
-                continue
-
-            if "# title:" in stripped_line:
-                current_title = stripped_line.split(":", 1)[1].strip()
-            elif "# required:" in stripped_line:
-                current_required = stripped_line.split(":", 1)[1].strip().lower() == 'true'
-            elif ": " in stripped_line:
-                parts = stripped_line.split(":")
-                var_name = parts[0].strip()
-                value = parts[1].strip()
-                if "!vault |" in value:
-                    value = 'ENCRYPTED_WITH_ANSIBLE_VAULT'
-                    skip = True
-                collected_data[var_name] = {
-                    'value': value,
-                    'title': current_title,
-                    'required': current_required
-                }
-                # Reset current_title and current_required for the next variable
-                current_title = None
-                current_required = None
-            else:
-                # Reset current_title and current_required if there's a new section or other unhandled lines
-                current_title = None
-                current_required = None
-
-        return collected_data
-    except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
-        print(f"Error loading {filepath}: {e}")
-        return None
-
-
-# Function to load all YAML files from a given directory and include file names
-def load_yaml_files_from_dir_custom(dir_path):
-    collected_data = []
-    if os.path.exists(dir_path) and os.path.isdir(dir_path):
-        for yaml_file in os.listdir(dir_path):
-            if yaml_file.endswith(".yml"):
-                file_data = load_yaml_file_custom(os.path.join(dir_path, yaml_file))
-                if file_data:
-                    collected_data.append({'file': yaml_file, 'data': file_data})
-    return collected_data
-
-# Function to process tasks for special keys like 'block'
-def process_special_task_keys(task):
+def process_special_task_keys(task, task_type='task'):
     tasks = []
     if 'block' in task:
+        task_name = task.get('name', 'Unnamed_block')
+        task_module = 'block'
+        tasks.append({
+            'name': task_name,
+            'module': task_module,
+            'type': 'block'
+        })
         for sub_task in task['block']:
-            processed_tasks = process_special_task_keys(sub_task)
+            processed_tasks = process_special_task_keys(sub_task, 'block')
             tasks.extend(processed_tasks)
     elif 'rescue' in task:
+        task_name = task.get('name', 'Unnamed_rescue')
+        task_module = 'rescue'
+        tasks.append({
+            'name': task_name,
+            'module': task_module,
+            'type': 'rescue'
+        })
         for sub_task in task['rescue']:
-            processed_tasks = process_special_task_keys(sub_task)
+            processed_tasks = process_special_task_keys(sub_task, 'rescue')
             tasks.extend(processed_tasks)
     else:
         task_name = task.get('name', 'Unnamed')
         task_module = list(task.keys())[1] if 'name' in task else list(task.keys())[0]
         tasks.append({
             'name': task_name,
-            'module': task_module
+            'module': task_module,
+            'type': task_type
         })
     return tasks
 
@@ -184,7 +49,8 @@ def process_special_task_keys(task):
 @click.command()
 @click.option('--role', default='./role', help='Path to the Ansible role directory.')
 @click.option('--playbook', default=None, help='Path to the playbook file.')
-def doc_the_role(role, playbook):
+@click.option('--graph', is_flag=True, help='Generate Mermaid graph for tasks.')
+def doc_the_role(role, playbook, graph):
     role_path = os.path.abspath(role)
     if not os.path.exists(role_path) or not os.path.isdir(role_path):
         print(f"Folder {role_path} does not exist.")
@@ -200,15 +66,39 @@ def doc_the_role(role, playbook):
         except Exception as e:
             print('playbook import error:', e)
 
-    document_role(role_path, playbook_content)
+    document_role(role_path, playbook_content, graph)
     
-def document_role(role_path, playbook_content):
+def document_role(role_path, playbook_content, generate_graph):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
 
     defaults_data = load_yaml_files_from_dir_custom(os.path.join(role_path, "defaults")) or []
     vars_data = load_yaml_files_from_dir_custom(os.path.join(role_path, "vars")) or []
+    docsible_path = os.path.join(role_path, ".docsible")
+
+    if os.path.exists(docsible_path):
+        docsible_present = True
+    else:
+        docsible_present = False
+        default_data = {
+        'description': '',
+        'requester': '',
+        'users': [],
+        'dt_dev': '',
+        'dt_prod': '',
+        'version': '',
+        'time_saving': ''
+        }
+
+        if not os.path.exists(docsible_path):
+            print(f"{docsible_path} not found. Initializing...")
+            try:
+                with open(docsible_path, 'w') as f:
+                    yaml.dump(default_data, f, default_flow_style=False)
+                print(f"Initialized {docsible_path} with default keys.")
+            except Exception as e:
+                print(f"An error occurred while initializing {docsible_path}: {e}")
 
     role_info = {
         "name": role_name,
@@ -216,7 +106,8 @@ def document_role(role_path, playbook_content):
         "vars": vars_data,
         "tasks": [],
         "meta": load_yaml_generic(meta_path) or {},
-        "playbook": playbook_content
+        "playbook": {"content": playbook_content, "graph": generate_mermaid_playbook(yaml.safe_load(playbook_content)) if playbook_content else None},
+        "docsible": load_yaml_generic(docsible_path) if docsible_present else None
     }
 
     tasks_dir = os.path.join(role_path, "tasks")
@@ -245,9 +136,18 @@ def document_role(role_path, playbook_content):
 
     role_info["existing_readme"] = ""
 
+    all_tasks = []
+    for task_file in role_info["tasks"]:
+        all_tasks.extend(task_file['tasks'])
+
+    mermaid_code_per_file = {}
+    if generate_graph:
+        # print(role_info["tasks"])
+        mermaid_code_per_file = generate_mermaid_role_tasks_per_file(role_info["tasks"])
+
     # Render the static template
     template = env.from_string(static_template)
-    output = template.render(role=role_info)
+    output = template.render(role=role_info, mermaid_code_per_file=mermaid_code_per_file)
 
     with open(readme_path, "w") as f:
         f.write(output)
