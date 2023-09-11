@@ -3,7 +3,7 @@ import os
 import yaml
 import click
 from jinja2 import Environment, BaseLoader
-from markdown_template import static_template
+from docsible.markdown_template import static_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom
 from docsible.utils.special_tasks_keys import process_special_task_keys
