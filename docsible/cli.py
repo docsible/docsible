@@ -41,7 +41,7 @@ def doc_the_role(role, playbook, graph):
             print('playbook import error:', e)
 
     document_role(role_path, playbook_content, graph)
-    
+
 def document_role(role_path, playbook_content, generate_graph):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
@@ -71,7 +71,7 @@ def document_role(role_path, playbook_content, generate_graph):
                 docsible_present = True
             except Exception as e:
                 print(f"An error occurred while initializing {docsible_path}: {e}")
-    
+
     role_info = {
         "name": role_name,
         "defaults": defaults_data,
@@ -90,7 +90,7 @@ def document_role(role_path, playbook_content, generate_graph):
             if task_file.endswith(".yml"):
                 tasks_data = load_yaml_generic(os.path.join(tasks_dir, task_file))
                 if tasks_data:
-                    task_info = {'file': task_file, 'tasks': []}
+                    task_info = {'file': task_file, 'tasks': [], 'mermaid': []}
                     if not isinstance(tasks_data, list):
                         print(f"Unexpected data type for tasks in {task_file}. Skipping.")
                         continue
@@ -101,6 +101,7 @@ def document_role(role_path, playbook_content, generate_graph):
                         if task and len(task.keys()) > 0:
                             processed_tasks = process_special_task_keys(task)
                             task_info['tasks'].extend(processed_tasks)
+                            task_info['mermaid'].extend([task])
                     role_info["tasks"].append(task_info)
 
     if os.path.exists(readme_path):
@@ -108,13 +109,8 @@ def document_role(role_path, playbook_content, generate_graph):
 
     role_info["existing_readme"] = ""
 
-    all_tasks = []
-    for task_file in role_info["tasks"]:
-        all_tasks.extend(task_file['tasks'])
-
     mermaid_code_per_file = {}
     if generate_graph:
-        # print(role_info["tasks"])
         mermaid_code_per_file = generate_mermaid_role_tasks_per_file(role_info["tasks"])
 
     # Render the static template
