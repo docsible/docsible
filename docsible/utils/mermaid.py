@@ -2,23 +2,45 @@ import re
 import hashlib
 
 def sanitize_for_mermaid_id(text):
-    text = text.replace("|", "_")
+    text = text.replace("\|", "_")
     # Allowing a-zA-Z0-9 as well as French accents
     return re.sub(r'[^a-zA-Z0-9À-ÿ]', '_', text)
 
+def break_text(text, max_length=50):
+    words = text.split(' ')
+    lines = []
+    current_line = []
+
+    current_length = 0
+    for word in words:
+        if current_length + len(word) + len(current_line) > max_length:
+            lines.append(' '.join(current_line))
+            current_length = 0
+            current_line = []
+
+        current_line.append(word)
+        current_length += len(word)
+
+    if current_line:
+        lines.append(' '.join(current_line))
+
+    return '<br>'.join(lines)
+
 def sanitize_for_title(text):
     # Allowing a-z0-9 as well as French accents, and converting to lower case
-    return re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
+    sanitized_text = re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
+    return break_text(sanitized_text)
 
-def sanitize_for_condition(text):
-    txt = text.replace("|", " or ")
-    return re.sub(r'[^a-z0-9À-ÿ]', ' ', txt.lower()) 
+
+def sanitize_for_condition(text, max_length=50):
+    sanitized_text = re.sub(r'[^a-z0-9À-ÿ]', ' ', text.lower())
+    return break_text(sanitized_text, max_length)
 
 def md5_hash(text):
     return hashlib.md5(text.encode('utf-8')).hexdigest()
 
 def sanitize_for_mermaid_when_id(text):
-    text = text.replace("|", "_")
+    text = text.replace("\|", "_")
     hashed_text = md5_hash(text)
     return hashed_text
 
