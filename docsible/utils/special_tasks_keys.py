@@ -1,7 +1,11 @@
 def escape_pipes(text):
-    if text:
+    if text is None:
+        return None
+    elif isinstance(text, str):
         return text.replace("|", "\|")
-    return None
+    elif isinstance(text, list):
+        return [escape_pipes(item) for item in text]
+
 
 def process_special_task_keys(task, task_type='task'):
     tasks = []
