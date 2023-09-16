@@ -4,13 +4,14 @@ import yaml
 import click
 from jinja2 import Environment, BaseLoader
 from docsible.markdown_template import static_template
-from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
+from utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
 env.from_string(static_template)
+
 
 def initialize_docsible(docsible_path, default_data):
     try:
@@ -19,6 +20,7 @@ def initialize_docsible(docsible_path, default_data):
         print(f"Initialized {docsible_path} with default keys.")
     except Exception as e:
         print(f"An error occurred while initializing {docsible_path}: {e}")
+
 
 @click.command()
 @click.option('--role', default='./role', help='Path to the Ansible role directory.')
@@ -42,26 +44,29 @@ def doc_the_role(role, playbook, graph):
 
     document_role(role_path, playbook_content, graph)
 
+
 def document_role(role_path, playbook_content, generate_graph):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
 
-    defaults_data = load_yaml_files_from_dir_custom(os.path.join(role_path, "defaults")) or []
-    vars_data = load_yaml_files_from_dir_custom(os.path.join(role_path, "vars")) or []
+    defaults_data = load_yaml_files_from_dir_custom(
+        os.path.join(role_path, "defaults")) or []
+    vars_data = load_yaml_files_from_dir_custom(
+        os.path.join(role_path, "vars")) or []
     docsible_path = os.path.join(role_path, ".docsible")
 
     if os.path.exists(docsible_path):
         docsible_present = True
     else:
         default_data = {
-        'description': '',
-        'requester': '',
-        'users': [],
-        'dt_dev': '',
-        'dt_prod': '',
-        'version': '',
-        'time_saving': ''
+            'description': '',
+            'requester': '',
+            'users': [],
+            'dt_dev': '',
+            'dt_prod': '',
+            'version': '',
+            'time_saving': ''
         }
 
         if not os.path.exists(docsible_path):
@@ -70,7 +75,8 @@ def document_role(role_path, playbook_content, generate_graph):
                 initialize_docsible(docsible_path, default_data)
                 docsible_present = True
             except Exception as e:
-                print(f"An error occurred while initializing {docsible_path}: {e}")
+                print(
+                    f"An error occurred while initializing {docsible_path}: {e}")
 
     role_info = {
         "name": role_name,
@@ -88,15 +94,18 @@ def document_role(role_path, playbook_content, generate_graph):
     if os.path.exists(tasks_dir) and os.path.isdir(tasks_dir):
         for task_file in os.listdir(tasks_dir):
             if task_file.endswith(".yml"):
-                tasks_data = load_yaml_generic(os.path.join(tasks_dir, task_file))
+                tasks_data = load_yaml_generic(
+                    os.path.join(tasks_dir, task_file))
                 if tasks_data:
                     task_info = {'file': task_file, 'tasks': [], 'mermaid': []}
                     if not isinstance(tasks_data, list):
-                        print(f"Unexpected data type for tasks in {task_file}. Skipping.")
+                        print(
+                            f"Unexpected data type for tasks in {task_file}. Skipping.")
                         continue
                     for task in tasks_data:
                         if not isinstance(task, dict):
-                            print(f"Skipping unexpected data in {task_file}: {task}")
+                            print(
+                                f"Skipping unexpected data in {task_file}: {task}")
                             continue
                         if task and len(task.keys()) > 0:
                             processed_tasks = process_special_task_keys(task)
@@ -111,16 +120,19 @@ def document_role(role_path, playbook_content, generate_graph):
 
     mermaid_code_per_file = {}
     if generate_graph:
-        mermaid_code_per_file = generate_mermaid_role_tasks_per_file(role_info["tasks"])
+        mermaid_code_per_file = generate_mermaid_role_tasks_per_file(
+            role_info["tasks"])
 
     # Render the static template
     template = env.from_string(static_template)
-    output = template.render(role=role_info, mermaid_code_per_file=mermaid_code_per_file)
+    output = template.render(
+        role=role_info, mermaid_code_per_file=mermaid_code_per_file)
 
     with open(readme_path, "w") as f:
         f.write(output)
 
     print('Documentation generated at:', readme_path)
+
 
 if __name__ == '__main__':
     doc_the_role()

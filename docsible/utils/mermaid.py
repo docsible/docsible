@@ -37,6 +37,7 @@ def sanitize_for_condition(text, max_length=50):
 
 def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_rescue_block=False):
     for i, task in enumerate(tasks):
+        has_rescue = False
         task_name = task.get("name", f"Unnamed_task_{i}")
         when_condition = task.get("when", False)
         block = task.get("block", False)
@@ -59,6 +60,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
             last_node, mermaid_data = process_tasks(
                 block, block_start_node, mermaid_data, block_start_node, level + 1, in_rescue_block=False)
             if rescue:
+                has_rescue = True
                 rescue_start_node = sanitized_task_name + \
                     f'_rescue_start_{level}'
                 mermaid_data += f'\n  {last_node}-->|Rescue Start| {rescue_start_node}[{sanitized_task_title}]'
@@ -78,9 +80,16 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
             if when_condition:
                 mermaid_data += f'\n  {sanitized_task_name}---|When: {sanitized_when_condition}| {sanitized_task_name}'
             last_node = sanitized_task_name
-        if parent_node and not in_rescue_block:
-            end_label = "End of Block"
-            mermaid_data += f'\n  {last_node}-.->|{end_label}| {parent_node}'
+            
+            # Add 'End of Task' line only for standalone tasks
+            if parent_node is None and not in_rescue_block:
+                end_label = "End of Task"
+                mermaid_data += f'\n  {last_node}-.->|{end_label}| {last_node}'
+
+    if parent_node and not in_rescue_block and not has_rescue:
+        end_label = "End of Block"
+        mermaid_data += f'\n  {last_node}-.->|{end_label}| {parent_node}'
+            
     return last_node, mermaid_data
 
 
