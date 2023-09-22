@@ -11,7 +11,7 @@ Description: Not available.
 {% if role.docsible -%}
 | Field                | Value           |
 |--------------------- |-----------------|
-| Functional description | {{ role.docsible.description_function or 'Not available.' }} |
+| Functional description | {{ role.docsible.description or 'Not available.' }} |
 | Requester            | {{ role.docsible.requester or 'Not available.' }} |
 | Users                | {{ role.docsible.users or 'Not available.' }} |
 | Date dev             | {{ role.docsible.dt_dev or 'Not available.' }} |
