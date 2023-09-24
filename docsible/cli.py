@@ -2,9 +2,11 @@
 import os
 import yaml
 import click
+from shutil import copyfile
+from datetime import datetime
 from jinja2 import Environment, BaseLoader
 from docsible.markdown_template import static_template
-from utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
+from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
@@ -114,6 +116,10 @@ def document_role(role_path, playbook_content, generate_graph):
                     role_info["tasks"].append(task_info)
 
     if os.path.exists(readme_path):
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        backup_readme_path = os.path.join(role_path, f"README_backup_{timestamp}.md")
+        copyfile(readme_path, backup_readme_path)
+        print(f'Readme file backed up as: {backup_readme_path}')
         os.remove(readme_path)
 
     role_info["existing_readme"] = ""
