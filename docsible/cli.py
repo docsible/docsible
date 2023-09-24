@@ -28,7 +28,8 @@ def initialize_docsible(docsible_path, default_data):
 @click.option('--role', default='./role', help='Path to the Ansible role directory.')
 @click.option('--playbook', default=None, help='Path to the playbook file.')
 @click.option('--graph', is_flag=True, help='Generate Mermaid graph for tasks.')
-def doc_the_role(role, playbook, graph):
+@click.option('--no-backup', is_flag=True, help='Don\'t backup the readme before remove.')
+def doc_the_role(role, playbook, graph, no_backup):
     role_path = os.path.abspath(role)
     if not os.path.exists(role_path) or not os.path.isdir(role_path):
         print(f"Folder {role_path} does not exist.")
@@ -44,10 +45,10 @@ def doc_the_role(role, playbook, graph):
         except Exception as e:
             print('playbook import error:', e)
 
-    document_role(role_path, playbook_content, graph)
+    document_role(role_path, playbook_content, graph, no_backup)
 
 
-def document_role(role_path, playbook_content, generate_graph):
+def document_role(role_path, playbook_content, generate_graph, no_backup):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
@@ -116,10 +117,11 @@ def document_role(role_path, playbook_content, generate_graph):
                     role_info["tasks"].append(task_info)
 
     if os.path.exists(readme_path):
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        backup_readme_path = os.path.join(role_path, f"README_backup_{timestamp}.md")
-        copyfile(readme_path, backup_readme_path)
-        print(f'Readme file backed up as: {backup_readme_path}')
+        if not no_backup:
+            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+            backup_readme_path = os.path.join(role_path, f"README_backup_{timestamp}.md")
+            copyfile(readme_path, backup_readme_path)
+            print(f'Readme file backed up as: {backup_readme_path}')
         os.remove(readme_path)
 
     role_info["existing_readme"] = ""
