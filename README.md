@@ -54,6 +54,7 @@ Options:
   --role TEXT      Path to the Ansible role directory.
   --playbook TEXT  Path to the playbook file.
   --graph          Generate Mermaid graph for tasks.
+  --no-backup      Don't backup the readme before remove.
   --help           Show this message and exit.
 ```
 
@@ -61,7 +62,8 @@ Options:
 
 - `--role`: Specifies the directory path to the Ansible role.
 - `--playbook`: Specifies the path to the Ansible playbook (Optional).
-- `--graph`: Generate mermaid for role and playbook
+- `--graph`: Generate mermaid for role and playbook.
+- `--no-backup`: Ignore existent README.md and remove before generate a new one. (Optional).
 
 ## Data Sources
 
@@ -70,7 +72,7 @@ Docsible fetches information from the following files within the specified Ansib
 - `defaults/*.yml`: For default variables
 - `vars/*.yml`: For role-specific variables
 - `meta/main.yml`: For role metadata
-- `tasks/*.yml`: For tasks, including special task types
+- `tasks/*.yml`: For tasks, including special task types and subfolders
 
 ## Prerequisites
 
