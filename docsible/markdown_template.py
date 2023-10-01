@@ -16,8 +16,11 @@ Description: Not available.
 | Users                | {{ role.docsible.users or 'Not available.' }} |
 | Date dev             | {{ role.docsible.dt_dev or 'Not available.' }} |
 | Date prod            | {{ role.docsible.dt_prod or 'Not available.' }} |
+| Readme update            | {{ role.docsible.dt_update or 'Not available.' }} |
 | Version              | {{ role.docsible.version or 'Not available.' }} |
 | Time Saving              | {{ role.docsible.time_saving or 'Not available.' }} |
+| Category              | {{ role.docsible.category or 'Not available.' }} |
+| Sub category              | {{ role.docsible.subCategory or 'Not available.' }} |
 {%- endif %}
 
 
@@ -61,7 +64,7 @@ No vars available.
 | Name | Module | Condition |
 | ---- | ------ | --------- |
 {%- for task in role.tasks[0]['tasks'] %}
-| {{ task.name }} | {{ task.module }} | {{ task.when or 'N/A' }} |
+| {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |
 {%- endfor %}
 {%- else %}
 {% for taskfile in role.tasks %}
@@ -69,7 +72,7 @@ No vars available.
 | Name | Module | Condition |
 | ---- | ------ | --------- |
 {%- for task in taskfile.tasks %}
-| {{ task.name }} | {{ task.module }} | {{ task.when or 'N/A' }} |
+| {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |
 {%- endfor %}
 {% endfor %}
 {%- endif %}

@@ -52,6 +52,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
+    timestamp_readme = datetime.now().strftime('%d/%m/%Y')
 
     defaults_data = load_yaml_files_from_dir_custom(
         os.path.join(role_path, "defaults")) or []
@@ -63,13 +64,17 @@ def document_role(role_path, playbook_content, generate_graph, no_backup):
         docsible_present = True
     else:
         default_data = {
-            'description': '',
-            'requester': '',
-            'users': [],
-            'dt_dev': '',
-            'dt_prod': '',
-            'version': '',
-            'time_saving': ''
+            'description': None,
+            'requester': None,
+            'users': None,
+            'dt_dev': None,
+            'dt_prod': None,
+            'dt_update': timestamp_readme,
+            'version': None,
+            'time_saving': None,
+            'category': None,
+            'subCategory': None,
+            'aap_hub': None
         }
 
         if not os.path.exists(docsible_path):
