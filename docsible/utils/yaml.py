@@ -37,30 +37,31 @@ def load_yaml_file_custom(filepath):
                 current_required = stripped_line.split(":", 1)[1].strip().lower() == 'true'
 
             elif ": " in stripped_line:
-                if current_list_var:
-                    collected_data[current_list_var] = {
-                        'value': current_list_items,
+                if not stripped_line.startswith("#"):
+                    if current_list_var:
+                        collected_data[current_list_var] = {
+                            'value': current_list_items,
+                            'title': current_title,
+                            'required': current_required
+                        }
+                        current_list_var = None
+                        current_list_items = []
+
+                    parts = stripped_line.split(":")
+                    var_name = parts[0].strip()
+                    value = parts[1].strip()
+
+                    if "!vault |" in value:
+                        value = 'ENCRYPTED_WITH_ANSIBLE_VAULT'
+                        skip = True
+
+                    collected_data[var_name] = {
+                        'value': value,
                         'title': current_title,
                         'required': current_required
                     }
-                    current_list_var = None
-                    current_list_items = []
-
-                parts = stripped_line.split(":")
-                var_name = parts[0].strip()
-                value = parts[1].strip()
-
-                if "!vault |" in value:
-                    value = 'ENCRYPTED_WITH_ANSIBLE_VAULT'
-                    skip = True
-
-                collected_data[var_name] = {
-                    'value': value,
-                    'title': current_title,
-                    'required': current_required
-                }
-                current_title = None
-                current_required = None
+                    current_title = None
+                    current_required = None
 
             elif stripped_line.endswith(":"):
                 current_list_var = stripped_line[:-1].strip()
