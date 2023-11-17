@@ -34,8 +34,8 @@ def initialize_docsible(docsible_path, default_data):
 
 
 @click.command()
-@click.option('--role', default='./role', help='Path to the Ansible role directory.')
-@click.option('--playbook', default=None, help='Path to the playbook file.')
+@click.option('--role', default='.', help='Path to the Ansible role directory.')
+@click.option('--playbook', default='./tests/test.yml', help='Path to the playbook file.')
 @click.option('--graph', is_flag=True, help='Generate Mermaid graph for tasks.')
 @click.option('--no-backup', is_flag=True, help='Don\'t backup the readme before remove.')
 @click.version_option(version=get_version(), help="Show the module version.")
