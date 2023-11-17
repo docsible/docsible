@@ -47,7 +47,7 @@ def load_yaml_file_custom(filepath):
                         current_list_var = None
                         current_list_items = []
 
-                    parts = stripped_line.split(":")
+                    parts = stripped_line.split(":", 1)
                     var_name = parts[0].strip()
                     value = parts[1].strip()
 

@@ -9,6 +9,15 @@ from docsible.markdown_template import static_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom
 from docsible.utils.special_tasks_keys import process_special_task_keys
+import re
+
+def get_version():
+    with open("pyproject.toml", "r") as file:
+        content = file.read()
+        match = re.search(r'^version\s*=\s*"([^"]+)"', content, re.M)
+        if match:
+            return match.group(1)
+    return "Unknown version"
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
@@ -29,6 +38,7 @@ def initialize_docsible(docsible_path, default_data):
 @click.option('--playbook', default=None, help='Path to the playbook file.')
 @click.option('--graph', is_flag=True, help='Generate Mermaid graph for tasks.')
 @click.option('--no-backup', is_flag=True, help='Don\'t backup the readme before remove.')
+@click.version_option(version=get_version(), help="Show the module version.")
 def doc_the_role(role, playbook, graph, no_backup):
     role_path = os.path.abspath(role)
     if not os.path.exists(role_path) or not os.path.isdir(role_path):
