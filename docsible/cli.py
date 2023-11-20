@@ -12,16 +12,7 @@ from docsible.utils.special_tasks_keys import process_special_task_keys
 import re
 
 def get_version():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    pyproject_path = os.path.join(dir_path, "pyproject.toml")
-    try:
-        with open(pyproject_path, "r") as file:
-            content = file.read()
-            match = re.search(r'^version\s*=\s*"([^"]+)"', content, re.M)
-            if match:
-                return match.group(1)
-    except FileNotFoundError:
-        return "Unknown version"
+    return "0.4.11"
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
