@@ -12,7 +12,7 @@ from docsible.utils.special_tasks_keys import process_special_task_keys
 import re
 
 def get_version():
-    return "0.4.11"
+    return "0.4.12"
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
