@@ -38,10 +38,17 @@ pip install docsible
 
 To use Docsible, you can run the following command in your terminal:
 
+### Specific path
 ```bash
-docsible --role /path/to/ansible/role --playbook /path/to/playbook.yml
+docsible --role /path/to/ansible/role --playbook /path/to/playbook.yml --graph
 ```
 
+### Current dir
+```bash
+docsible --graph # by default it's take tests/test.yml playbook from role if not specified any
+```
+
+### Only role without playbook
 ```bash
 docsible --role /path/to/ansible/role # without include a playbook into readme
 ```
@@ -55,6 +62,7 @@ Options:
   --playbook TEXT  Path to the playbook file.
   --graph          Generate Mermaid graph for tasks.
   --no-backup      Don't backup the readme before remove.
+  --version        Show the module version.
   --help           Show this message and exit.
 ```
 
@@ -73,6 +81,10 @@ Docsible fetches information from the following files within the specified Ansib
 - `vars/*.yml`: For role-specific variables
 - `meta/main.yml`: For role metadata
 - `tasks/*.yml`: For tasks, including special task types and subfolders
+
+## Examples
+[Demo1 coffeemaker_midday role](https://github.com/exaluc/docsible/examples/README_demo1.md)
+[Demo2 coffeemaker_morning role](https://github.com/exaluc/docsible/examples/README_demo2.md)
 
 ## Prerequisites
 
