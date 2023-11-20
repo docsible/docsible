@@ -83,8 +83,9 @@ Docsible fetches information from the following files within the specified Ansib
 - `tasks/*.yml`: For tasks, including special task types and subfolders
 
 ## Examples
-[Demo1 coffeemaker_midday role](https://github.com/exaluc/docsible/examples/README_demo1.md)
-[Demo2 coffeemaker_morning role](https://github.com/exaluc/docsible/examples/README_demo2.md)
+[Demo1 coffeemaker_midday role](https://github.com/exaluc/docsible/blob/main/examples/README_demo1.md)
+
+[Demo2 coffeemaker_morning role](https://github.com/exaluc/docsible/blob/main/examples/README_demo2.md)
 
 ## Prerequisites
 
