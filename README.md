@@ -22,7 +22,7 @@ Docsible is a command-line interface (CLI) written in Python that automates the 
 - CLI-based, easy to integrate into a CI/CD pipeline
 - Provides a templating feature to customize output
 - Supports multiple YAML files within `tasks`, `defaults`, `vars` directory
-- Includes meta-data like author and license from `meta/main.yml`
+- Includes meta-data like author and license from `meta/main.[yml/yaml]`
 - Generates a well-structured table for default and role-specific variables
 - Support for encrypted Ansible Vault variables
 
@@ -62,6 +62,7 @@ Options:
   --playbook TEXT  Path to the playbook file.
   --graph          Generate Mermaid graph for tasks.
   --no-backup      Don't backup the readme before remove.
+  --no-docsible    Don't create .docsible file and do not print relative variable to generated README.md
   --version        Show the module version.
   --help           Show this message and exit.
 ```
@@ -77,10 +78,10 @@ Options:
 
 Docsible fetches information from the following files within the specified Ansible role:
 
-- `defaults/*.yml`: For default variables
-- `vars/*.yml`: For role-specific variables
-- `meta/main.yml`: For role metadata
-- `tasks/*.yml`: For tasks, including special task types and subfolders
+- `defaults/*.yml/yaml`: For default variables
+- `vars/*.yml/yaml`: For role-specific variables
+- `meta/main.yml/yaml`: For role metadata
+- `tasks/*.yml/yaml`: For tasks, including special task types and subfolders
 
 ## Examples
 [Demo1 coffeemaker_midday role](https://github.com/exaluc/docsible/blob/main/examples/README_demo1.md)
