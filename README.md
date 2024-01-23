@@ -96,6 +96,10 @@ Docsible works with Python 3.x and requires the following libraries:
 - Jinja2
 - PyYAML
 
+## TODO
+- Clean the code
+- Add more features
+
 ## Contributing
 
 For details on how to contribute, please read the [Contributing Guidelines](CONTRIBUTING.md).
