@@ -60,7 +60,7 @@ No vars available.
 
 
 ### Tasks
-{%- if role.tasks|length == 1 and role.tasks[0]['file'] == 'main.yml' %}
+{%- if role.tasks|length == 1 and ( role.tasks[0]['file'] == 'main.yml' or role.tasks[0]['file'] == 'main.yaml' ) %}
 | Name | Module | Condition |
 | ---- | ------ | --------- |
 {%- for task in role.tasks[0]['tasks'] %}

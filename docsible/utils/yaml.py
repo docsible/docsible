@@ -87,13 +87,12 @@ def load_yaml_file_custom(filepath):
         print(f"Error loading {filepath}: {e}")
         return None
 
-
 # Function to load all YAML files from a given directory and include file names
 def load_yaml_files_from_dir_custom(dir_path):
     collected_data = []
     if os.path.exists(dir_path) and os.path.isdir(dir_path):
         for yaml_file in os.listdir(dir_path):
-            if yaml_file.endswith(".yml"):
+            if yaml_file.endswith(".yml") or yaml_file.endswith(".yaml"):
                 file_data = load_yaml_file_custom(os.path.join(dir_path, yaml_file))
                 if file_data:
                     collected_data.append({'file': yaml_file, 'data': file_data})
