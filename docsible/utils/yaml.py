@@ -1,9 +1,12 @@
-import yaml
+"""Module providing yaml parsing functions"""
 import os
+import yaml
+
 
 def load_yaml_generic(filepath):
+    """Function to load YAML in a standard way"""
     try:
-        with open(filepath, 'r') as f:
+        with open(filepath, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
         return data
     except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
@@ -11,6 +14,7 @@ def load_yaml_generic(filepath):
         return None
 
 def load_yaml_file_custom(filepath):
+    """Function to load YAML, evalate comments and avoid to report vault values"""
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -46,10 +50,10 @@ def load_yaml_file_custom(filepath):
                         }
                         current_list_var = None
                         current_list_items = []
-                    
+
                     # Added dis to avoid inline comments to be part of the value
-                    cleand_line = stripped_line.split("#")[0] 
-                    
+                    cleand_line = stripped_line.split("#")[0]
+
                     parts = cleand_line.split(":", 1)
                     var_name = parts[0].strip()
                     value = parts[1].strip()
@@ -90,8 +94,8 @@ def load_yaml_file_custom(filepath):
         print(f"Error loading {filepath}: {e}")
         return None
 
-# Function to load all YAML files from a given directory and include file names
 def load_yaml_files_from_dir_custom(dir_path):
+    """Function to load all YAML files from a given directory and include file names"""
     collected_data = []
     if os.path.exists(dir_path) and os.path.isdir(dir_path):
         for yaml_file in os.listdir(dir_path):
