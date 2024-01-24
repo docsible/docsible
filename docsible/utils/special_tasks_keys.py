@@ -1,13 +1,16 @@
+"""Module with function for manage block and rescue code"""
+
 def escape_pipes(text):
-    if text is None:
-        return None
-    elif isinstance(text, str):
-        return text.replace("|", "\|")
-    elif isinstance(text, list):
+    """Function to escape pipes in string or list"""
+    if isinstance(text, str):
+        return text.replace("|", r"\|")
+    if isinstance(text, list):
         return [escape_pipes(item) for item in text]
+    return None
 
 
 def process_special_task_keys(task, task_type='task'):
+    """Function to process block and rescue tasks"""
     tasks = []
     if 'block' in task:
         task_name = task.get('name', 'Unnamed_block')

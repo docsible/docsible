@@ -9,10 +9,9 @@ from docsible.markdown_template import static_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom
 from docsible.utils.special_tasks_keys import process_special_task_keys
-import re
 
 def get_version():
-    return "0.4.12"
+    return "0.5.01"
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
@@ -105,7 +104,8 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "vars": vars_data,
         "tasks": [],
         "meta": load_yaml_generic(meta_path) or {},
-        "playbook": {"content": playbook_content, "graph": generate_mermaid_playbook(yaml.safe_load(playbook_content)) if playbook_content else None},
+        "playbook": {"content": playbook_content, "graph": 
+                        generate_mermaid_playbook(yaml.safe_load(playbook_content)) if playbook_content else None},
         "docsible": load_yaml_generic(docsible_path) if docsible_present else None
     }
 

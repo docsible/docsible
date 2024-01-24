@@ -2,7 +2,7 @@ import re
 
 
 def sanitize_for_mermaid_id(text):
-    text = text.replace("\|", "_")
+    text = text.replace(r"\|", "_")
     # Allowing a-zA-Z0-9 as well as French accents
     return re.sub(r'[^a-zA-Z0-9À-ÿ]', '_', text)
 
