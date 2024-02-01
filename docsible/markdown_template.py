@@ -61,7 +61,7 @@ No vars available.
 
 ### Tasks
 {%- if role.tasks|length == 1 and ( role.tasks[0]['file'] == 'main.yml' or role.tasks[0]['file'] == 'main.yaml' ) %}
-| Name | Module | Condition |
+| Name | Module | Has Conditions |
 | ---- | ------ | --------- |
 {%- for task in role.tasks[0]['tasks'] %}
 | {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |
@@ -69,7 +69,7 @@ No vars available.
 {%- else %}
 {% for taskfile in role.tasks %}
 #### File: {{ taskfile.file }}
-| Name | Module | Condition |
+| Name | Module | Has Conditions |
 | ---- | ------ | --------- |
 {%- for task in taskfile.tasks %}
 | {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |

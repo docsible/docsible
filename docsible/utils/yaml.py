@@ -52,9 +52,14 @@ def load_yaml_file_custom(filepath):
                         current_list_items = []
 
                     # Added dis to avoid inline comments to be part of the value
-                    cleand_line = stripped_line.split("#")[0]
+                    stripped_line = stripped_line.split("#")[0].rstrip()
+                    # If the inline comment is on an array variable:
+                    if stripped_line.endswith(":"):
+                        current_list_var = stripped_line[:-1].strip()
+                        current_list_items = []
+                        continue
 
-                    parts = cleand_line.split(":", 1)
+                    parts = stripped_line.split(":", 1)
                     var_name = parts[0].strip()
                     value = parts[1].strip()
 
@@ -75,7 +80,7 @@ def load_yaml_file_custom(filepath):
                 current_list_items = []
 
             elif current_list_var:
-                current_list_items.append(stripped_line)
+                current_list_items.append(stripped_line.split("#")[0])
 
             else:
                 current_title = None
