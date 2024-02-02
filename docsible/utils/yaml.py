@@ -52,9 +52,14 @@ def load_yaml_file_custom(filepath):
                         current_list_items = []
 
                     # Added dis to avoid inline comments to be part of the value
-                    cleand_line = stripped_line.split("#")[0]
+                    stripped_line = stripped_line.split("#")[0].rstrip()
+                    # If the inline comment is on an array variable:
+                    if stripped_line.endswith(":"):
+                        current_list_var = stripped_line[:-1].strip()
+                        current_list_items = []
+                        continue
 
-                    parts = cleand_line.split(":", 1)
+                    parts = stripped_line.split(":", 1)
                     var_name = parts[0].strip()
                     value = parts[1].strip()
 
@@ -75,7 +80,7 @@ def load_yaml_file_custom(filepath):
                 current_list_items = []
 
             elif current_list_var:
-                current_list_items.append(stripped_line)
+                current_list_items.append(stripped_line.split("#")[0])
 
             else:
                 current_title = None
@@ -104,3 +109,27 @@ def load_yaml_files_from_dir_custom(dir_path):
                 if file_data:
                     collected_data.append({'file': yaml_file, 'data': file_data})
     return collected_data
+
+def get_task_commensts(filepath):
+    # read task file
+    with open(filepath, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+
+    task_comments = []
+    task_comment = {}
+    comment_line = ""
+    for line in lines:
+        stripped_line = line.strip()
+        # the line is a comment, ad it to buffer comment_line
+        if stripped_line.startswith("#"):
+            comment_line =  comment_line+ stripped_line.split("#", 1)[1].strip()
+        #if the line start with "- name:" assign to it the previous comment
+        elif stripped_line.startswith("- name:"):
+            if comment_line:
+                task_name =  stripped_line.replace("- name:", "").split("#")[0].strip()
+                task_comment = { "task_name": task_name, "task_comments": comment_line }
+                task_comments.append(task_comment)
+                comment_line = ""
+        else:
+            comment_line = ""
+    return task_comments

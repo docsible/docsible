@@ -7,11 +7,11 @@ from datetime import datetime
 from jinja2 import Environment, BaseLoader
 from docsible.markdown_template import static_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
-from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom
+from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_commensts
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
 def get_version():
-    return "0.5.01"
+    return "0.5.5"
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
@@ -30,12 +30,13 @@ def initialize_docsible(docsible_path, default_data):
 @click.option('--role', default='.', help='Path to the Ansible role directory.')
 @click.option('--playbook', default='./tests/test.yml', help='Path to the playbook file.')
 @click.option('--graph', is_flag=True, help='Generate Mermaid graph for tasks.')
-@click.option('--no-backup', is_flag=True, help='Don\'t backup the readme before remove.')
-@click.option('--no-docsible', is_flag=True, help='Don\'t generate .docsible file and do not include it in README.md.')
+@click.option('--no-backup', is_flag=True, help='Do not backup the readme before remove.')
+@click.option('--no-docsible', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
+@click.option('--comments', is_flag=True, help='Read comments from tasks files')
 @click.version_option(version=get_version(), help="Show the module version.")
 
 
-def doc_the_role(role, playbook, graph, no_backup, no_docsible):
+def doc_the_role(role, playbook, graph, no_backup, no_docsible, comments):
     role_path = os.path.abspath(role)
     if not os.path.exists(role_path) or not os.path.isdir(role_path):
         print(f"Folder {role_path} does not exist.")
@@ -51,10 +52,10 @@ def doc_the_role(role, playbook, graph, no_backup, no_docsible):
         except Exception as e:
             print('playbook import error:', e)
 
-    document_role(role_path, playbook_content, graph, no_backup, no_docsible)
+    document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments)
 
 
-def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible):
+def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
@@ -120,7 +121,9 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
                     tasks_data = load_yaml_generic(file_path)
                     if tasks_data:
                         relative_path = os.path.relpath(file_path, tasks_dir)
-                        task_info = {'file': relative_path, 'tasks': [], 'mermaid': []}
+                        task_info = {'file': relative_path, 'tasks': [], 'mermaid': [], "comments": []}
+                        if comments:
+                            task_info['comments'] = get_task_commensts(file_path)
                         if not isinstance(tasks_data, list):
                             print(
                                 f"Unexpected data type for tasks in {task_file}. Skipping.")
@@ -134,6 +137,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
                                 processed_tasks = process_special_task_keys(task)
                                 task_info['tasks'].extend(processed_tasks)
                                 task_info['mermaid'].extend([task])
+
                         role_info["tasks"].append(task_info)
 
     if os.path.exists(readme_path):
@@ -150,7 +154,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     if generate_graph:
         mermaid_code_per_file = generate_mermaid_role_tasks_per_file(
             role_info["tasks"])
-
+    
     # Render the static template
     template = env.from_string(static_template)
     output = template.render(

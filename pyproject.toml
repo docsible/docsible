@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "docsible"
-version = "0.5.01"
+version = "0.5.5"
 description = "Document generator for ansible role"
 authors = ["Lucian BLETAN <neuraluc@gmail.com>"]
 license = "MIT"

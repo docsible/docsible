@@ -1,7 +1,9 @@
 static_template = """{{- role.existing_readme -}}
 
 # Generated Documentation
+
 ## {{ role.name }}
+
 {% if role.meta and role.meta.galaxy_info -%}
 Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {% else %}
@@ -25,6 +27,7 @@ Description: Not available.
 
 
 ### Defaults
+
 {% if role.defaults|length > 0 -%}
 **These are static variables with lower priority**
 {%- for defaultfile in role.defaults %}
@@ -43,6 +46,7 @@ No defaults available.
 
 
 ### Vars
+
 {% if role.vars|length > 0 -%}
 **These are variables with higher priority**
 {%- for varsfile in role.vars %}
@@ -60,28 +64,23 @@ No vars available.
 
 
 ### Tasks
-{%- if role.tasks|length == 1 and ( role.tasks[0]['file'] == 'main.yml' or role.tasks[0]['file'] == 'main.yaml' ) %}
-| Name | Module | Condition |
-| ---- | ------ | --------- |
-{%- for task in role.tasks[0]['tasks'] %}
-| {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |
-{%- endfor %}
-{%- else %}
+
 {% for taskfile in role.tasks %}
 #### File: {{ taskfile.file }}
-| Name | Module | Condition |
-| ---- | ------ | --------- |
+| Name | Module | Has Conditions | Comments |
+| ---- | ------ | --------- |  -------- |
 {%- for task in taskfile.tasks %}
-| {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |
+| {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} | {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |
 {%- endfor %}
 {% endfor %}
-{%- endif %}
-
 
 {% if mermaid_code_per_file -%}
 ## Task Flow Graphs
+
 {% for task_file, mermaid_code in mermaid_code_per_file.items() %}
+
 ### Graph for {{ task_file }}
+
 ```mermaid
 {{ mermaid_code }}
 ```
@@ -90,6 +89,7 @@ No vars available.
 
 {% if role.playbook.content -%}
 ## Playbook
+
 ```yml
 {{ role.playbook.content }}
 ```
@@ -106,12 +106,15 @@ No vars available.
 {{ role.meta.galaxy_info.author or 'Unknown Author' }}
 
 #### License
+
 {{ role.meta.galaxy_info.license or 'No license specified.' }}
 
 #### Minimum Ansible Version
+
 {{ role.meta.galaxy_info.min_ansible_version or 'No minimum version specified.' }}
 
 #### Platforms
+
 {% if role.meta.galaxy_info.platforms -%}
 {% for platform in role.meta.galaxy_info.platforms -%}
 - **{{ platform.name }}**: {{ platform.versions }}
