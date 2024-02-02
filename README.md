@@ -61,8 +61,9 @@ Options:
   --role TEXT      Path to the Ansible role directory.
   --playbook TEXT  Path to the playbook file.
   --graph          Generate Mermaid graph for tasks.
-  --no-backup      Don't backup the readme before remove.
-  --no-docsible    Don't create .docsible file and do not print relative variable to generated README.md
+  --no-backup      Do not backup the readme before remove.
+  --no-docsible    Do not create .docsible file and do not print relative variable to generated README.md.
+  --comments       Read comments from tasks files.
   --version        Show the module version.
   --help           Show this message and exit.
 ```
@@ -73,6 +74,7 @@ Options:
 - `--playbook`: Specifies the path to the Ansible playbook (Optional).
 - `--graph`: Generate mermaid for role and playbook.
 - `--no-backup`: Ignore existent README.md and remove before generate a new one. (Optional).
+- `--comments`: Read comments from tasks files. (Optional).
 
 ## Data Sources
 
@@ -99,6 +101,22 @@ Docsible works with Python 3.x and requires the following libraries:
 ## TODO
 - Clean the code
 - Add more features
+
+## About comments
+
+This tool work whith several type of comments.
+
+### On variables and defaults
+The tool read comments placed before a variable, only if it begin with specific tag:
+
+`# title:` This tag will be used for popiulate the column **Title** of the README.md. It is a short description of the variable
+
+`# required:` This tag will be used for popiulate the column **Required** of the README.md
+
+### On tasks
+
+The tool will read all the line before each `- name:` of the tasks that begin with `#`.
+All comment will be reported to the column **Comments** of the tasks tables.
 
 ## Contributing
 
