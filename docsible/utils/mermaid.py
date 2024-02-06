@@ -39,6 +39,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
     for i, task in enumerate(tasks):
         has_rescue = False
         task_name = task.get("name", f"Unnamed_task_{i}")
+        task_module = task.get("ansible.builtin.include_tasks", False)
         when_condition = task.get("when", False)
         block = task.get("block", False)
         rescue = task.get("rescue", False)
@@ -76,15 +77,19 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
             end_label = "End of Rescue Block"
             mermaid_data += f'\n  {last_node}-.->|{end_label}| {parent_node}'
         else:
-            mermaid_data += f'\n  {last_node}-->|Task| {sanitized_task_name}[{sanitized_task_title}]'
+            if task_module:
+                mermaid_data += f'\n  {last_node}-->|Task| {sanitized_task_name}[{sanitized_task_title}] -->|Include| {task_module}'
+            else:
+                mermaid_data += f'\n  {last_node}-->|Task| {sanitized_task_name}[{sanitized_task_title}]'
             if when_condition:
                 mermaid_data += f'\n  {sanitized_task_name}---|When: {sanitized_when_condition}| {sanitized_task_name}'
+                    
             last_node = sanitized_task_name
             
-            # Add 'End of Task' line only for standalone tasks
-            if parent_node is None and not in_rescue_block:
-                end_label = "End of Task"
-                mermaid_data += f'\n  {last_node}-.->|{end_label}| {last_node}'
+            # # Add 'End of Task' line only for standalone tasks
+            # if parent_node is None and not in_rescue_block:
+            #     end_label = "End of Task"
+            #     mermaid_data += f'\n  {last_node}-.->|{end_label}| {last_node}'
 
     if parent_node and not in_rescue_block and not has_rescue:
         end_label = "End of Block"
@@ -123,5 +128,7 @@ def generate_mermaid_role_tasks_per_file(tasks_per_file):
         mermaid_data = "flowchart TD\n  Start"
         last_node = "Start"
         last_node, mermaid_data = process_tasks(tasks, last_node, mermaid_data)
+        mermaid_data += f'\n  {last_node}-->End'
         mermaid_codes[task_file] = mermaid_data
+
     return mermaid_codes

@@ -25,25 +25,26 @@ Description: Not available.
 | Sub category              | {{ role.docsible.subCategory or 'Not available.' }} |
 {%- endif %}
 
-
 ### Defaults
 
 {% if role.defaults|length > 0 -%}
 **These are static variables with lower priority**
 {%- for defaultfile in role.defaults %}
+
 #### File: {{ defaultfile.file }}
-| Var          | Type         | Value       | Required    | Title       |
-|--------------|--------------|-------------|-------------|-------------|
+{# Cicle used for decide to set Title and Required Column #}
+{% set ns = namespace (details_required = false) %}{% set ns = namespace (details_title = false) %}
+{% for key, details in defaultfile.data.items() %}{% if details.required is not none %}{% set ns.details_required = true %}{% endif %}{% if details.title is not none %}{% set ns.details_title = true %}{% endif %}{% endfor %}
+| Var          | Type         | Value       |{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
+|--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| {{ key }}    | {{ var_type }}   | {{ details.value }}  | {{ details.required }}  | {{ details.title }} |
+| {{ key }}    | {{ var_type }}   | {{ details.value }}  | {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 {%- else %}
 No defaults available.
 {%- endif %}
-
-
 
 ### Vars
 
@@ -51,11 +52,13 @@ No defaults available.
 **These are variables with higher priority**
 {%- for varsfile in role.vars %}
 #### File: {{ varsfile.file }}
-| Var          | Type         | Value       | Required    | Title       |
-|--------------|--------------|-------------|-------------|-------------|
+{# Cicle used for decide to set Title and Required Column #}
+{% set ns = namespace (details_required = false) %}{% set ns = namespace (details_title = false) %}{% for key, details in varsfile.data.items() %}{% if details.required is not none %}{% set ns.details_required = true %}{% endif %}{% if details.title is not none %}{% set ns.details_title = true %}{% endif %}{% endfor %}
+| Var          | Type         | Value       |{% if ns.details_required %} Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
+|--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| {{ key }}    | {{ var_type }}   | {{ details.value }}  | {{ details.required }}  | {{ details.title }} |
+| {{ key }}    | {{ var_type }}   | {{ details.value }}  |{% if ns.details_required %} {{ details.required }} |{% endif %}{% if ns.details_title %} {{ details.title }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 {%- else %}
@@ -67,10 +70,12 @@ No vars available.
 
 {% for taskfile in role.tasks %}
 #### File: {{ taskfile.file }}
-| Name | Module | Has Conditions | Comments |
-| ---- | ------ | --------- |  -------- |
+{% set ns = namespace (comments_required = false) %}{% for comment in taskfile['comments'] %}{% if comment != "" %}{% set ns.comments_required = true %}{% endif %}{% endfor %}
+{{ ns.comments_required }}
+| Name | Module | Has Conditions |{% if ns.comments_required %} Comments |{% endif %}
+| ---- | ------ | --------- |{% if ns.comments_required %}  -------- |{% endif %}
 {%- for task in taskfile.tasks %}
-| {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} | {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |
+| {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
 {%- endfor %}
 {% endfor %}
 
