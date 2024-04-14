@@ -22,10 +22,10 @@ def load_yaml_generic(filepath):
 def load_yaml_file_custom(filepath):
     """Function to load YAML, evaluate comments and avoid to report vault values"""
     try:
-        with open(filepath, 'r') as file:
+        with open(filepath, 'r', encoding='utf-8') as file:
             lines = file.readlines()
 
-        with open(filepath, 'r') as file:
+        with open(filepath, 'r', encoding='utf-8') as file:
             data = yaml.safe_load(file)
 
         result = {}
