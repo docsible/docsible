@@ -2,6 +2,12 @@
 import os
 import yaml
 
+def vault_constructor(loader, node):
+    # Handle '!vault' tag to prevent constructor issues
+    return "ENCRYPTED_WITH_ANSIBLE_VAULT"
+
+# Register the custom constructor with the '!vault' tag.
+yaml.SafeLoader.add_constructor('!vault', vault_constructor)
 
 def load_yaml_generic(filepath):
     """Function to load YAML in a standard way"""
@@ -14,86 +20,54 @@ def load_yaml_generic(filepath):
         return None
 
 def load_yaml_file_custom(filepath):
-    """Function to load YAML, evalate comments and avoid to report vault values"""
+    """Function to load YAML, evaluate comments and avoid to report vault values"""
     try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
+        with open(filepath, 'r') as file:
+            lines = file.readlines()
 
-        collected_data = {}
-        current_title = None
-        current_required = None
-        current_list_var = None
-        current_list_items = []
-        skip = False
+        with open(filepath, 'r') as file:
+            data = yaml.safe_load(file)
 
-        for line in lines:
-            stripped_line = line.strip()
+        result = {}
+        for key in data:
+            for idx, line in enumerate(lines):
+                if line.strip().startswith(f"{key}:"):
+                    # Fetch comments from previous lines
+                    comments = []
+                    for comment_index in range(idx - 1, -1, -1):
+                        comment_line = lines[comment_index].strip()
+                        if comment_line.startswith("#"):
+                            comments.append(comment_line[1:].strip())
+                        else:
+                            break
+                    comments.reverse()
 
-            if skip:
-                if stripped_line == "":
-                    skip = False
-                continue
+                    # Initialize with default None values
+                    comment_dict = {'title': "n/a", 'required': "n/a"}
+                    for comment in comments:
+                        comment_lower = comment.lower()
+                        if 'title:' in comment_lower:
+                            title_index = comment_lower.find('title:') + 6  # Start after 'title:'
+                            if title_index > -1:
+                                # Trim any whitespace after the colon before capturing the value
+                                comment_dict['title'] = comment[title_index:].lstrip()
+                        if 'required:' in comment_lower:
+                            required_index = comment_lower.find('required:') + 9  # Start after 'required:'
+                            if required_index > -1:
+                                # Trim any whitespace after the colon before capturing the value
+                                comment_dict['required'] = comment[required_index:].lstrip()
 
-            if "# title:" in stripped_line:
-                current_title = stripped_line.split(":", 1)[1].strip()
-
-            elif "# required:" in stripped_line:
-                current_required = stripped_line.split(":", 1)[1].strip().lower() == 'true'
-
-            elif ": " in stripped_line:
-                if not stripped_line.startswith("#"):
-                    if current_list_var:
-                        collected_data[current_list_var] = {
-                            'value': current_list_items,
-                            'title': current_title,
-                            'required': current_required
-                        }
-                        current_list_var = None
-                        current_list_items = []
-
-                    # Added dis to avoid inline comments to be part of the value
-                    stripped_line = stripped_line.split("#")[0].rstrip()
-                    # If the inline comment is on an array variable:
-                    if stripped_line.endswith(":"):
-                        current_list_var = stripped_line[:-1].strip()
-                        current_list_items = []
-                        continue
-
-                    parts = stripped_line.split(":", 1)
-                    var_name = parts[0].strip()
-                    value = parts[1].strip()
-
-                    if "!vault |" in value:
-                        value = 'ENCRYPTED_WITH_ANSIBLE_VAULT'
-                        skip = True
-
-                    collected_data[var_name] = {
-                        'value': value,
-                        'title': current_title,
-                        'required': current_required
+                    value_type = type(data[key]).__name__
+                    result[key] = {
+                        'value': data[key],
+                        'title': comment_dict['title'],
+                        'required': comment_dict['required'],
+                        'line': idx + 1,
+                        'type': value_type
                     }
-                    current_title = None
-                    current_required = None
+                    break
 
-            elif stripped_line.endswith(":"):
-                current_list_var = stripped_line[:-1].strip()
-                current_list_items = []
-
-            elif current_list_var:
-                current_list_items.append(stripped_line.split("#")[0])
-
-            else:
-                current_title = None
-                current_required = None
-
-        if current_list_var:
-            collected_data[current_list_var] = {
-                'value': current_list_items,
-                'title': current_title,
-                'required': current_required
-            }
-
-        return collected_data
+        return result
 
     except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
         print(f"Error loading {filepath}: {e}")

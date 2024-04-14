@@ -11,7 +11,7 @@ from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_cust
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
 def get_version():
-    return "0.5.8"
+    return "0.5.9"
 
 # Initialize the Jinja2 Environment
 env = Environment(loader=BaseLoader)
