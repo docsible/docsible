@@ -4,19 +4,14 @@ import yaml
 import click
 from shutil import copyfile
 from datetime import datetime
-from jinja2 import Environment, BaseLoader
+from jinja2 import Environment, BaseLoader, FileSystemLoader 
 from docsible.markdown_template import static_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_commensts
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
 def get_version():
-    return "0.5.10"
-
-# Initialize the Jinja2 Environment
-env = Environment(loader=BaseLoader)
-env.from_string(static_template)
-
+    return "0.5.11"
 
 def initialize_docsible(docsible_path, default_data):
     try:
@@ -33,10 +28,11 @@ def initialize_docsible(docsible_path, default_data):
 @click.option('--no-backup', is_flag=True, help='Do not backup the readme before remove.')
 @click.option('--no-docsible', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
 @click.option('--comments', is_flag=True, help='Read comments from tasks files')
+@click.option('--md-template', default=None, help='Path to the markdown template file.')
 @click.version_option(version=get_version(), help="Show the module version.")
 
 
-def doc_the_role(role, playbook, graph, no_backup, no_docsible, comments):
+def doc_the_role(role, playbook, graph, no_backup, no_docsible, comments, md_template):
     role_path = os.path.abspath(role)
     if not os.path.exists(role_path) or not os.path.isdir(role_path):
         print(f"Folder {role_path} does not exist.")
@@ -52,10 +48,10 @@ def doc_the_role(role, playbook, graph, no_backup, no_docsible, comments):
         except Exception as e:
             print('playbook import error:', e)
 
-    document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments)
+    document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_template)
 
 
-def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments):
+def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, md_template):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
@@ -156,7 +152,14 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
             role_info["tasks"])
     
     # Render the static template
-    template = env.from_string(static_template)
+    if md_template:
+        template_dir = os.path.dirname(md_template)
+        template_file = os.path.basename(md_template)
+        env = Environment(loader=FileSystemLoader(template_dir))
+        template = env.get_template(template_file)
+    else:
+        env = Environment(loader=BaseLoader)
+        template = env.from_string(static_template)
     output = template.render(
         role=role_info, mermaid_code_per_file=mermaid_code_per_file)
 

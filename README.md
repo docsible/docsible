@@ -64,6 +64,7 @@ Options:
   --no-backup      Do not backup the readme before remove.
   --no-docsible    Do not create .docsible file and do not print relative variable to generated README.md.
   --comments       Read comments from tasks files.
+  --md-template    Path to the markdown template file.
   --version        Show the module version.
   --help           Show this message and exit.
 ```
@@ -75,6 +76,7 @@ Options:
 - `--graph`: Generate mermaid for role and playbook.
 - `--no-backup`: Ignore existent README.md and remove before generate a new one. (Optional).
 - `--comments`: Read comments from tasks files. (Optional).
+- `--md-template`: Specifies the path to the markdown template file. (Optional).
 
 ## Data Sources
 
