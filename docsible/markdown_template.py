@@ -23,6 +23,7 @@ Description: Not available.
 | Time Saving              | {{ role.docsible.time_saving or 'Not available.' }} |
 | Category              | {{ role.docsible.category or 'Not available.' }} |
 | Sub category              | {{ role.docsible.subCategory or 'Not available.' }} |
+| Critical ⚠️            | {{ role.docsible.critical or 'Not available.' }} |
 {%- endif %}
 
 ### Defaults
