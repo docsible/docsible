@@ -72,7 +72,6 @@ No vars available.
 {% for taskfile in role.tasks %}
 #### File: {{ taskfile.file }}
 {% set ns = namespace (comments_required = false) %}{% for comment in taskfile['comments'] %}{% if comment != "" %}{% set ns.comments_required = true %}{% endif %}{% endfor %}
-{{ ns.comments_required }}
 | Name | Module | Has Conditions |{% if ns.comments_required %} Comments |{% endif %}
 | ---- | ------ | --------- |{% if ns.comments_required %}  -------- |{% endif %}
 {%- for task in taskfile.tasks %}
