@@ -11,7 +11,7 @@ from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_cust
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
 def get_version():
-    return "0.5.12"
+    return "0.5.13"
 
 def initialize_docsible(docsible_path, default_data):
     try:

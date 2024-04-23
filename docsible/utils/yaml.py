@@ -29,6 +29,9 @@ def load_yaml_file_custom(filepath):
             data = yaml.safe_load(file)
 
         result = {}
+        if not data:
+            return None
+        
         for key in data:
             for idx, line in enumerate(lines):
                 if line.strip().startswith(f"{key}:"):
@@ -66,10 +69,9 @@ def load_yaml_file_custom(filepath):
                         'type': value_type
                     }
                     break
-
         return result
 
-    except (FileNotFoundError, yaml.constructor.ConstructorError) as e:
+    except (FileNotFoundError, yaml.constructor.ConstructorError, yaml.YAMLError) as e:
         print(f"Error loading {filepath}: {e}")
         return None
 
