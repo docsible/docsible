@@ -1,8 +1,18 @@
 static_template = """{{- role.existing_readme -}}
 
-# Generated Documentation
+# Role Overview
 
 ## {{ role.name }}
+
+{% if role.belongs_to_collection -%}
+```
+Role belongs to {{ role.belongs_to_collection.namespace }}/{{ role.belongs_to_collection.name }}
+Namespace - {{ role.belongs_to_collection.namespace }}
+Collection - {{ role.belongs_to_collection.name }}
+Version - {{ role.belongs_to_collection.version }}
+Repository - {{ role.belongs_to_collection.repository }}
+```
+{%- endif %}
 
 {% if role.meta and role.meta.galaxy_info -%}
 Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
@@ -127,4 +137,42 @@ Description: Not available.
 No platforms specified.
 {%- endif %}
 {%- endif %}
+"""
+
+collection_template = """
+# Collection Overview
+
+**Namespace**: {{ collection.namespace }}
+
+**Name**: {{ collection.name }}
+
+**Version**: {{ collection.version }}
+
+**Authors**: 
+{% for author in collection.authors %}{{ author }}{% if not loop.last %}\n {% endif %}{% endfor %}
+
+{% if collection.description %}
+## Description
+{{ collection.description }}
+{% endif %}
+
+## Roles
+{% for role in roles %}
+### [{{ role.name }}](roles/{{ role.name }}/README.md)
+- Description: {{ role.meta.galaxy_info.description }}
+{% endfor %}
+
+## Metadata
+{% if collection.repository %}
+- **Repository**: [Repository]({{ collection.repository }})
+{% endif %}
+{% if collection.documentation %}
+- **Documentation**: [Documentation]({{ collection.documentation }})
+{% endif %}
+{% if collection.homepage %}
+- **Homepage**: [Homepage]({{ collection.homepage }})
+{% endif %}
+{% if collection.issues %}
+- **Issues**: [Issues]({{ collection.issues }})
+{% endif %}
 """

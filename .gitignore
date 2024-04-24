@@ -160,4 +160,5 @@ cython_debug/
 #.idea/
 
 role_test
+collections_tests
 .vscode
