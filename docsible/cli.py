@@ -11,15 +11,35 @@ from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_cust
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
 def get_version():
-    return "0.5.14"
+    return "0.5.15"
 
-def initialize_docsible(docsible_path, default_data):
-    try:
-        with open(docsible_path, 'w') as f:
+def manage_docsible_file_keys(docsible_path):
+    default_data = {
+        'description': None,
+        'requester': None,
+        'users': None,
+        'dt_dev': None,
+        'dt_prod': None,
+        'dt_update': datetime.now().strftime('%d/%m/%Y'),
+        'version': None,
+        'time_saving': None,
+        'category': None,
+        'subCategory': None,
+        'aap_hub': None,
+        'critical': None
+    }
+    if os.path.exists(docsible_path):
+        with open(docsible_path, 'r') as f:
+            existing_data = yaml.safe_load(f) or {}
+        updated_data = {**default_data, **existing_data}
+        if updated_data != existing_data:
+            with open(docsible_path, 'w', encoding='utf-8') as f:
+                yaml.dump(updated_data, f, default_flow_style=False)
+            print(f"Updated {docsible_path} with new keys.")
+    else:
+        with open(docsible_path, 'w', encoding='utf-8') as f:
             yaml.dump(default_data, f, default_flow_style=False)
         print(f"Initialized {docsible_path} with default keys.")
-    except Exception as e:
-        print(f"An error occurred while initializing {docsible_path}: {e}")
 
 @click.command()
 @click.option('--role', default='.', help='Path to the Ansible role directory.')
@@ -55,7 +75,9 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
-    timestamp_readme = datetime.now().strftime('%d/%m/%Y')
+    docsible_path = os.path.join(role_path, ".docsible")
+    if not no_docsible:
+        manage_docsible_file_keys(docsible_path)
 
     # Check if meta/main.yml exist, otherwise try meta/main.yaml
     if not os.path.exists(meta_path):
@@ -65,36 +87,6 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         os.path.join(role_path, "defaults")) or []
     vars_data = load_yaml_files_from_dir_custom(
         os.path.join(role_path, "vars")) or []
-    if no_docsible:
-        docsible_present = False
-    else:
-        docsible_path = os.path.join(role_path, ".docsible")
-
-        if os.path.exists(docsible_path):
-            docsible_present = True
-        else:
-            default_data = {
-                'description': None,
-                'requester': None,
-                'users': None,
-                'dt_dev': None,
-                'dt_prod': None,
-                'dt_update': timestamp_readme,
-                'version': None,
-                'time_saving': None,
-                'category': None,
-                'subCategory': None,
-                'aap_hub': None,
-                'critical': None
-            }
-
-            print(f"{docsible_path} not found. Initializing...")
-            try:
-                initialize_docsible(docsible_path, default_data)
-                docsible_present = True
-            except Exception as e:
-                print(
-                    f"An error occurred while initializing {docsible_path}: {e}")
 
     role_info = {
         "name": role_name,
@@ -104,7 +96,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "meta": load_yaml_generic(meta_path) or {},
         "playbook": {"content": playbook_content, "graph": 
                         generate_mermaid_playbook(yaml.safe_load(playbook_content)) if playbook_content else None},
-        "docsible": load_yaml_generic(docsible_path) if docsible_present else None
+        "docsible": load_yaml_generic(docsible_path) if not no_docsible else None
     }
 
     tasks_dir = os.path.join(role_path, "tasks")
@@ -164,7 +156,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     output = template.render(
         role=role_info, mermaid_code_per_file=mermaid_code_per_file)
 
-    with open(readme_path, "w") as f:
+    with open(readme_path, "w", encoding='utf-8') as f:
         f.write(output)
 
     print('Documentation generated at:', readme_path)

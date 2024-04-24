@@ -26,9 +26,9 @@ Description: Not available.
 | Critical ⚠️            | {{ role.docsible.critical or 'Not available.' }} |
 {%- endif %}
 
+{% if role.defaults|length > 0 -%}
 ### Defaults
 
-{% if role.defaults|length > 0 -%}
 **These are static variables with lower priority**
 {%- for defaultfile in role.defaults %}
 
@@ -44,12 +44,12 @@ Description: Not available.
 {%- endfor %}
 {%- endfor %}
 {%- else %}
-No defaults available.
 {%- endif %}
 
-### Vars
 
 {% if role.vars|length > 0 -%}
+### Vars
+
 **These are variables with higher priority**
 {%- for varsfile in role.vars %}
 #### File: {{ varsfile.file }}
@@ -63,7 +63,6 @@ No defaults available.
 {%- endfor %}
 {%- endfor %}
 {%- else %}
-No vars available.
 {%- endif %}
 
 
