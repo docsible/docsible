@@ -2,7 +2,7 @@
 
 ## About
 
-Docsible is a command-line interface (CLI) written in Python that automates the documentation of Ansible roles. It generates a Markdown-formatted README file for role by scanning the Ansible YAML files.
+Docsible is a command-line interface (CLI) written in Python that automates the documentation of Ansible roles and collections. It generates a Markdown-formatted README file for role or collection by scanning the Ansible YAML files.
 
 ## Table of Contents
 
@@ -43,9 +43,9 @@ To use Docsible, you can run the following command in your terminal:
 docsible --role /path/to/ansible/role --playbook /path/to/playbook.yml --graph
 ```
 
-### Current dir
+### Document collection
 ```bash
-docsible --graph # by default it's take tests/test.yml playbook from role if not specified any
+docsible --collection ./collections_tests/lucian/ --no-backup --graph
 ```
 
 ### Only role without playbook
@@ -59,6 +59,7 @@ Usage: docsible [OPTIONS]
 
 Options:
   --role TEXT      Path to the Ansible role directory.
+  --collection TEXT Path to the Ansible collection directory.
   --playbook TEXT  Path to the playbook file.
   --graph          Generate Mermaid graph for tasks.
   --no-backup      Do not backup the readme before remove.
@@ -72,11 +73,12 @@ Options:
 ### Flags
 
 - `--role`: Specifies the directory path to the Ansible role.
-- `--playbook`: Specifies the path to the Ansible playbook (Optional).
+- `--collection`: Specifies the directory path to the Ansible collection.
+- `--playbook`: Specifies the path to the Ansible playbook (Optional). ( Works only with roles )
 - `--graph`: Generate mermaid for role and playbook.
 - `--no-backup`: Ignore existent README.md and remove before generate a new one. (Optional).
 - `--comments`: Read comments from tasks files. (Optional).
-- `--md-template`: Specifies the path to the markdown template file. (Optional).
+- `--md-template`: Specifies the path to the markdown template file (Optional). ( Works only with roles )
 
 ## Data Sources
 
@@ -103,6 +105,8 @@ Docsible works with Python 3.x and requires the following libraries:
 ## TODO
 - Clean the code
 - Add more features
+- Custom templates for collection
+- Multiple playbooks handle into mermaid for collection and role
 
 ## About comments
 
