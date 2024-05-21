@@ -50,7 +50,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}](defaults/{{ defaultfile.file }}#L{{details.line}})   | {{ var_type }}   | {{ details.value }}  | {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title }} |{% endif %}
+| [{{ key }}](defaults/{{ defaultfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '\|') }}`  | {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '\|') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 {%- else %}
@@ -69,7 +69,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}](vars/{{ varsfile.file }}#L{{details.line}})    | {{ var_type }}   | {{ details.value }}  |{% if ns.details_required %} {{ details.required }} |{% endif %}{% if ns.details_title %} {{ details.title }} |{% endif %}
+| [{{ key }}](vars/{{ varsfile.file }}#L{{details.line}})    | {{ var_type }}   | `{{ details.value | replace('|', '\|') }}`  |{% if ns.details_required %} {{ details.required }} |{% endif %}{% if ns.details_title %} {{ details.title | replace('|', '\|') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 {%- else %}
