@@ -10,8 +10,11 @@ from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_r
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_commensts
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
+DOCSIBLE_START_TAG = "<!-- DOCSIBLE START -->"
+DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
+
 def get_version():
-    return "0.6.2"
+    return "0.6.3"
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
@@ -41,7 +44,21 @@ def manage_docsible_file_keys(docsible_path):
             yaml.dump(default_data, f, default_flow_style=False)
         print(f"Initialized {docsible_path} with default keys.")
 
-def render_readme_template(collection_metadata, roles_info, output_path):
+def manage_docsible_tags(content):
+    return f"{DOCSIBLE_START_TAG}\n{content}\n{DOCSIBLE_END_TAG}"
+
+def replace_between_tags(existing_content, new_content):
+    start_index = existing_content.find(DOCSIBLE_START_TAG)
+    end_index = existing_content.find(DOCSIBLE_END_TAG) + len(DOCSIBLE_END_TAG)
+
+    if start_index != -1 and end_index != -1:
+        before = existing_content[:start_index].rstrip()
+        after = existing_content[end_index:].lstrip()
+        return f"{before}\n{new_content}\n{after}".strip()
+    else:
+        return existing_content + '\n' + new_content.strip()
+
+def render_readme_template(collection_metadata, roles_info, output_path, append):
     """
     Render the collection README.md using an embedded Jinja template.
     """
@@ -51,13 +68,27 @@ def render_readme_template(collection_metadata, roles_info, output_path):
         'collection': collection_metadata,
         'roles': roles_info
     }
-    readme_content = template.render(data)
+    new_content = template.render(data)
+    new_content = manage_docsible_tags(new_content)
+    
+    if os.path.exists(output_path):
+        with open(output_path, 'r', encoding='utf-8') as f:
+            existing_readme = f.read()
+        if append:
+            if DOCSIBLE_START_TAG in existing_readme and DOCSIBLE_END_TAG in existing_readme:
+                final_content = replace_between_tags(existing_readme, new_content)
+            else:
+                final_content = f"{existing_readme}\n{new_content}"
+        else:
+            final_content = new_content
+    else:
+        final_content = new_content
+    
     with open(output_path, 'w', encoding='utf-8') as readme_file:
-        readme_file.write(readme_content)
-    print(f"New collection README.md written at: {output_path}")
+        readme_file.write(final_content)
+    print(f"Collection README.md written at: {output_path}")
 
-
-def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_template):
+def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_template, append):
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
@@ -80,11 +111,10 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
                 for role in os.listdir(roles_dir):
                     role_path = os.path.join(roles_dir, role)
                     if os.path.isdir(role_path):
-                        role_info = document_role(role_path, playbook, graph, no_backup, no_docsible, comments, md_template, belongs_to_collection=collection_metadata)
+                        role_info = document_role(role_path, playbook, graph, no_backup, no_docsible, comments, md_template, belongs_to_collection=collection_metadata, append=append)
                         roles_info.append(role_info)
 
-            render_readme_template(collection_metadata, roles_info, readme_path)
-
+            render_readme_template(collection_metadata, roles_info, readme_path, append)
 
 @click.command()
 @click.option('--role', default=None, help='Path to the Ansible role directory.')
@@ -95,16 +125,16 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
 @click.option('--no-docsible', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
 @click.option('--comments', is_flag=True, help='Read comments from tasks files')
 @click.option('--md-template', default=None, help='Path to the markdown template file.')
+@click.option('--append', is_flag=True, help='Append to the existing README.md instead of replacing it.')
 @click.version_option(version=get_version(), help="Show the module version.")
 
-
-def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_template):
+def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_template, append):
     if collection:
         collection_path = os.path.abspath(collection)
         if not os.path.exists(collection_path) or not os.path.isdir(collection_path):
             print(f"Folder {collection_path} does not exist.")
             return
-        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_template)
+        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_template, append)
     elif role:
         role_path = os.path.abspath(role)
         if not os.path.exists(role_path) or not os.path.isdir(role_path):
@@ -119,11 +149,11 @@ def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comm
                 print('playbook not found:', playbook)
             except Exception as e:
                 print('playbook import error:', e)
-        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_template, belongs_to_collection=False)
+        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_template, belongs_to_collection=False, append=append)
     else:
         print("Please specify either a role or a collection path.")
 
-def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, md_template, belongs_to_collection):
+def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, md_template, belongs_to_collection, append):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, "README.md")
     meta_path = os.path.join(role_path, "meta", "main.yml")
@@ -167,13 +197,11 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
                         if comments:
                             task_info['comments'] = get_task_commensts(file_path)
                         if not isinstance(tasks_data, list):
-                            print(
-                                f"Unexpected data type for tasks in {task_file}. Skipping.")
+                            print(f"Unexpected data type for tasks in {task_file}. Skipping.")
                             continue
                         for task in tasks_data:
                             if not isinstance(task, dict):
-                                print(
-                                    f"Skipping unexpected data in {task_file}: {task}")
+                                print(f"Skipping unexpected data in {task_file}: {task}")
                                 continue
                             if task and len(task.keys()) > 0:
                                 processed_tasks = process_special_task_keys(task)
@@ -188,14 +216,12 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
             backup_readme_path = os.path.join(role_path, f"README_backup_{timestamp}.md")
             copyfile(readme_path, backup_readme_path)
             print(f'Readme file backed up as: {backup_readme_path}')
-        os.remove(readme_path)
-
-    role_info["existing_readme"] = ""
+        if not append:
+            os.remove(readme_path)
 
     mermaid_code_per_file = {}
     if generate_graph:
-        mermaid_code_per_file = generate_mermaid_role_tasks_per_file(
-            role_info["tasks"])
+        mermaid_code_per_file = generate_mermaid_role_tasks_per_file(role_info["tasks"])
     
     # Render the static template
     if md_template:
@@ -206,11 +232,24 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     else:
         env = Environment(loader=BaseLoader)
         template = env.from_string(static_template)
-    output = template.render(
-        role=role_info, mermaid_code_per_file=mermaid_code_per_file)
-
+    new_content = template.render(role=role_info, mermaid_code_per_file=mermaid_code_per_file)
+    new_content = manage_docsible_tags(new_content)
+    
+    if os.path.exists(readme_path):
+        with open(readme_path, 'r', encoding='utf-8') as f:
+            existing_readme = f.read()
+        if append:
+            if DOCSIBLE_START_TAG in existing_readme and DOCSIBLE_END_TAG in existing_readme:
+                final_content = replace_between_tags(existing_readme, new_content)
+            else:
+                final_content = f"{existing_readme}\n{new_content}"
+        else:
+            final_content = new_content
+    else:
+        final_content = new_content
+    
     with open(readme_path, "w", encoding='utf-8') as f:
-        f.write(output)
+        f.write(final_content)
 
     print('Documentation generated at:', readme_path)
     return role_info

@@ -66,6 +66,7 @@ Options:
   --no-docsible    Do not create .docsible file and do not print relative variable to generated README.md.
   --comments       Read comments from tasks files.
   --md-template    Path to the markdown template file.
+  --append         Append to the existing README.md instead of replacing it.
   --version        Show the module version.
   --help           Show this message and exit.
 ```
@@ -79,6 +80,7 @@ Options:
 - `--no-backup`: Ignore existent README.md and remove before generate a new one. (Optional).
 - `--comments`: Read comments from tasks files. (Optional).
 - `--md-template`: Specifies the path to the markdown template file (Optional). ( Works only with roles )
+- `--append`: Append existing readme.md if needed
 
 ## Data Sources
 
