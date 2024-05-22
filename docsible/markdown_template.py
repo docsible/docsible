@@ -1,6 +1,5 @@
-static_template = """{{- role.existing_readme -}}
-
-# Role Overview
+static_template = """
+# 📃 Role overview
 
 ## {{ role.name }}
 
@@ -140,7 +139,7 @@ No platforms specified.
 """
 
 collection_template = """
-# Collection Overview
+# 📃 Collection overview
 
 **Namespace**: {{ collection.namespace }}
 
