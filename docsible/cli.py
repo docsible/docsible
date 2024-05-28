@@ -15,7 +15,7 @@ DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 def get_version():
-    return "0.6.4"
+    return "0.6.5"
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
@@ -131,17 +131,17 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
             render_readme_template(collection_metadata, roles_info, readme_path, append)
 
 @click.command()
-@click.option('--role', default=None, help='Path to the Ansible role directory.')
-@click.option('--collection', default=None, help='Path to the Ansible collection directory.')
-@click.option('--playbook', default='tests/test.yml', help='Path to the playbook file.')
-@click.option('--graph', is_flag=True, help='Generate Mermaid graph for tasks.')
-@click.option('--no-backup', is_flag=True, help='Do not backup the readme before remove.')
-@click.option('--no-docsible', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
-@click.option('--comments', is_flag=True, help='Read comments from tasks files')
-@click.option('--md-template', default=None, help='Path to the markdown template file.')
-@click.option('--append', is_flag=True, help='Append to the existing README.md instead of replacing it.')
-@click.option('--output', default='README.md', help='Output readme file name.')
-@click.version_option(version=get_version(), help="Show the module version.")
+@click.option('--role', '-r', default=None, help='Path to the Ansible role directory.')
+@click.option('--collection', '-c', default=None, help='Path to the Ansible collection directory.')
+@click.option('--playbook', '-p', default='tests/test.yml', help='Path to the playbook file.')
+@click.option('--graph', '-g', is_flag=True, help='Generate Mermaid graph for tasks.')
+@click.option('--no-backup', '-nob', is_flag=True, help='Do not backup the readme before remove.')
+@click.option('--no-docsible', '-nod', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
+@click.option('--comments', '-com', is_flag=True, help='Read comments from tasks files')
+@click.option('--md-template', '-tpl', default=None, help='Path to the markdown template file.')
+@click.option('--append', '-a', is_flag=True, help='Append to the existing README.md instead of replacing it.')
+@click.option('--output', '-o', default='README.md', help='Output readme file name.')
+@click.version_option(version=get_version(), help=f"Show the module version. Actual is {get_version()}")
 
 def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_template, append, output):
     if collection:
