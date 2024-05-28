@@ -12,9 +12,10 @@ from docsible.utils.special_tasks_keys import process_special_task_keys
 
 DOCSIBLE_START_TAG = "<!-- DOCSIBLE START -->"
 DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
+timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 def get_version():
-    return "0.6.3"
+    return "0.6.4"
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
@@ -88,7 +89,7 @@ def render_readme_template(collection_metadata, roles_info, output_path, append)
         readme_file.write(final_content)
     print(f"Collection README.md written at: {output_path}")
 
-def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_template, append):
+def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_template, append, output):
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
@@ -98,12 +99,15 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
             galaxy_path = os.path.join(root, galaxy_file)
             with open(galaxy_path, 'r') as f:
                 collection_metadata = yaml.safe_load(f)
-            readme_path = os.path.join(root, collection_metadata.get('readme', 'README.md'))
+                if output == "README.md":
+                    readme_path = os.path.join(root, collection_metadata.get('readme', output))
+                else:
+                    readme_path = os.path.join(root, output)
 
             if os.path.exists(readme_path) and not no_backup:
-                backup_path = readme_path + '_backup_' + datetime.now().strftime('%Y%m%d%H%M%S')
+                backup_path = f"{ readme_path[:readme_path.lower().rfind('.md')] }_backup_{timestamp}.md"
                 copyfile(readme_path, backup_path)
-                print(f"Backup of existing README.md created at: {backup_path}")
+                print(f"Backup of existing {output} created at: {backup_path}")
 
             roles_dir = os.path.join(root, 'roles')
             roles_info = []
@@ -111,7 +115,17 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
                 for role in os.listdir(roles_dir):
                     role_path = os.path.join(roles_dir, role)
                     if os.path.isdir(role_path):
-                        role_info = document_role(role_path, playbook, graph, no_backup, no_docsible, comments, md_template, belongs_to_collection=collection_metadata, append=append)
+                        if playbook:
+                            playbook_content = None
+                            role_playbook_path = os.path.join(role_path, playbook)
+                            try:
+                                with open(role_playbook_path, 'r') as f:
+                                    playbook_content = f.read()
+                            except FileNotFoundError:
+                                print(f'{role} not found:', role_playbook_path)
+                            except Exception as e:
+                                print(f'{playbook} import for {role} error:', e)
+                        role_info = document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_template, belongs_to_collection=collection_metadata, append=append, output=output)
                         roles_info.append(role_info)
 
             render_readme_template(collection_metadata, roles_info, readme_path, append)
@@ -119,22 +133,23 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
 @click.command()
 @click.option('--role', default=None, help='Path to the Ansible role directory.')
 @click.option('--collection', default=None, help='Path to the Ansible collection directory.')
-@click.option('--playbook', default=None, help='Path to the playbook file.')
+@click.option('--playbook', default='tests/test.yml', help='Path to the playbook file.')
 @click.option('--graph', is_flag=True, help='Generate Mermaid graph for tasks.')
 @click.option('--no-backup', is_flag=True, help='Do not backup the readme before remove.')
 @click.option('--no-docsible', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
 @click.option('--comments', is_flag=True, help='Read comments from tasks files')
 @click.option('--md-template', default=None, help='Path to the markdown template file.')
 @click.option('--append', is_flag=True, help='Append to the existing README.md instead of replacing it.')
+@click.option('--output', default='README.md', help='Output readme file name.')
 @click.version_option(version=get_version(), help="Show the module version.")
 
-def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_template, append):
+def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_template, append, output):
     if collection:
         collection_path = os.path.abspath(collection)
         if not os.path.exists(collection_path) or not os.path.isdir(collection_path):
             print(f"Folder {collection_path} does not exist.")
             return
-        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_template, append)
+        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_template, append, output)
     elif role:
         role_path = os.path.abspath(role)
         if not os.path.exists(role_path) or not os.path.isdir(role_path):
@@ -149,13 +164,13 @@ def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comm
                 print('playbook not found:', playbook)
             except Exception as e:
                 print('playbook import error:', e)
-        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_template, belongs_to_collection=False, append=append)
+        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_template, belongs_to_collection=False, append=append, output=output)
     else:
         print("Please specify either a role or a collection path.")
 
-def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, md_template, belongs_to_collection, append):
+def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, md_template, belongs_to_collection, append, output):
     role_name = os.path.basename(role_path)
-    readme_path = os.path.join(role_path, "README.md")
+    readme_path = os.path.join(role_path, output)
     meta_path = os.path.join(role_path, "meta", "main.yml")
     docsible_path = os.path.join(role_path, ".docsible")
     if not no_docsible:
@@ -212,8 +227,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
 
     if os.path.exists(readme_path):
         if not no_backup:
-            timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-            backup_readme_path = os.path.join(role_path, f"README_backup_{timestamp}.md")
+            backup_readme_path = os.path.join(role_path, f"{ output[:output.lower().rfind('.md')] }_backup_{timestamp}.md")
             copyfile(readme_path, backup_readme_path)
             print(f'Readme file backed up as: {backup_readme_path}')
         if not append:
