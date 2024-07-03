@@ -30,16 +30,20 @@ def manage_docsible_file_keys(docsible_path):
         'category': None,
         'subCategory': None,
         'aap_hub': None,
-        'critical': None
+        'critical': None,
+        'automation_kind': None 
     }
     if os.path.exists(docsible_path):
         with open(docsible_path, 'r') as f:
             existing_data = yaml.safe_load(f) or {}
+        
+        # Update dt_update field
+        existing_data['dt_update'] = datetime.now().strftime('%d/%m/%Y')
+        
         updated_data = {**default_data, **existing_data}
-        if updated_data != existing_data:
-            with open(docsible_path, 'w', encoding='utf-8') as f:
-                yaml.dump(updated_data, f, default_flow_style=False)
-            print(f"Updated {docsible_path} with new keys.")
+        with open(docsible_path, 'w', encoding='utf-8') as f:
+            yaml.dump(updated_data, f, default_flow_style=False)
+        print(f"Updated {docsible_path} with new keys.")
     else:
         with open(docsible_path, 'w', encoding='utf-8') as f:
             yaml.dump(default_data, f, default_flow_style=False)

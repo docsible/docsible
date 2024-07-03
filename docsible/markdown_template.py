@@ -22,17 +22,45 @@ Description: Not available.
 {% if role.docsible -%}
 | Field                | Value           |
 |--------------------- |-----------------|
-| Functional description | {{ role.docsible.description or 'Not available.' }} |
-| Requester            | {{ role.docsible.requester or 'Not available.' }} |
-| Users                | {{ role.docsible.users or 'Not available.' }} |
-| Date dev             | {{ role.docsible.dt_dev or 'Not available.' }} |
-| Date prod            | {{ role.docsible.dt_prod or 'Not available.' }} |
-| Readme update            | {{ role.docsible.dt_update or 'Not available.' }} |
-| Version              | {{ role.docsible.version or 'Not available.' }} |
-| Time Saving              | {{ role.docsible.time_saving or 'Not available.' }} |
-| Category              | {{ role.docsible.category or 'Not available.' }} |
-| Sub category              | {{ role.docsible.subCategory or 'Not available.' }} |
-| Critical ⚠️            | {{ role.docsible.critical or 'Not available.' }} |
+{%- if role.docsible.description %}
+| Functional description | {{ role.docsible.description }} |
+{%- endif %}
+{%- if role.docsible.requester %}
+| Requester            | {{ role.docsible.requester }} |
+{%- endif %}
+{%- if role.docsible.users %}
+| Users                | {{ role.docsible.users }} |
+{%- endif %}
+{%- if role.docsible.dt_dev %}
+| Date dev             | {{ role.docsible.dt_dev }} |
+{%- endif %}
+{%- if role.docsible.dt_prod %}
+| Date prod            | {{ role.docsible.dt_prod }} |
+{%- endif %}
+{%- if role.docsible.dt_update %}
+| Readme update        | {{ role.docsible.dt_update }} |
+{%- endif %}
+{%- if role.docsible.version %}
+| Version              | {{ role.docsible.version }} |
+{%- endif %}
+{%- if role.docsible.time_saving %}
+| Time Saving          | {{ role.docsible.time_saving }} |
+{%- endif %}
+{%- if role.docsible.category %}
+| Category             | {{ role.docsible.category }} |
+{%- endif %}
+{%- if role.docsible.subCategory %}
+| Sub category         | {{ role.docsible.subCategory }} |
+{%- endif %}
+{%- if role.docsible.aap_hub %}
+| AAP Hub              | {{ role.docsible.aap_hub }} |
+{%- endif %}
+{%- if role.docsible.automation_kind %}
+| Automation Kind      | {{ role.docsible.automation_kind }} |
+{%- endif %}
+{%- if role.docsible.critical %}
+| Critical ⚠️          | {{ role.docsible.critical }} |
+{%- endif %}
 {%- endif %}
 
 {% if role.defaults|length > 0 -%}
