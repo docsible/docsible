@@ -75,9 +75,20 @@ def load_yaml_file_custom(filepath):
                                 # Trim any whitespace after the colon before capturing the value
                                 comment_dict['description'] = comment[description_index:].lstrip()
 
+                    # Check for multiline values
+                    multiline_value = [line]
+                    for next_line in lines[idx + 1:]:
+                        if not next_line.startswith(" "):
+                            break
+                        multiline_value.append(next_line)
+                    if len(multiline_value) > 1:
+                        value = "<multiline value>"
+                    else:
+                        value = data[key]
+
                     value_type = type(data[key]).__name__
                     result[key] = {
-                        'value': data[key],
+                        'value': value,
                         'title': comment_dict['title'],
                         'required': comment_dict['required'],
                         'description': comment_dict['description'],
