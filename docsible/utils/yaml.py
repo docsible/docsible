@@ -41,7 +41,10 @@ def load_yaml_file_custom(filepath):
         result = {}
         if not data:
             return None
-        
+
+        def is_multiline_value(line):
+            return line.strip().endswith('|')
+
         for key in data:
             for idx, line in enumerate(lines):
                 if line.strip().startswith(f"{key}:"):
@@ -75,16 +78,15 @@ def load_yaml_file_custom(filepath):
                                 # Trim any whitespace after the colon before capturing the value
                                 comment_dict['description'] = comment[description_index:].lstrip()
 
-                    # Check for multiline values
-                    multiline_value = [line]
-                    for next_line in lines[idx + 1:]:
-                        if not next_line.startswith(" "):
-                            break
-                        multiline_value.append(next_line)
-                    if len(multiline_value) > 1:
+                    # Handle multiline values
+                    if is_multiline_value(line):
                         value = "<multiline value>"
                     else:
                         value = data[key]
+
+                    # Handle long lists
+                    if isinstance(data[key], list) and len(data[key]) > 10:
+                        value = "<list too long>"
 
                     value_type = type(data[key]).__name__
                     result[key] = {
