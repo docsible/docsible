@@ -20,7 +20,17 @@ def load_yaml_generic(filepath):
         return None
 
 def load_yaml_file_custom(filepath):
-    """Function to load YAML, evaluate comments and avoid to report vault values"""
+    """
+    Function to load YAML, evaluate comments and avoid reporting vault values.
+    
+    Args:
+        filepath (str): The path to the YAML file.
+        
+    Returns:
+        dict: A dictionary with keys representing YAML keys and values containing the value,
+              title, required, description, line number, and type of each key.
+              Returns None if the file is empty or an error occurs.
+    """
     try:
         with open(filepath, 'r', encoding='utf-8') as file:
             lines = file.readlines()
@@ -31,7 +41,10 @@ def load_yaml_file_custom(filepath):
         result = {}
         if not data:
             return None
-        
+
+        def is_multiline_value(line):
+            return line.strip().endswith('|')
+
         for key in data:
             for idx, line in enumerate(lines):
                 if line.strip().startswith(f"{key}:"):
@@ -46,7 +59,7 @@ def load_yaml_file_custom(filepath):
                     comments.reverse()
 
                     # Initialize with default None values
-                    comment_dict = {'title': "n/a", 'required': "n/a"}
+                    comment_dict = {'title': "n/a", 'required': "n/a", 'description': "n/a"}
                     for comment in comments:
                         comment_lower = comment.lower()
                         if 'title:' in comment_lower:
@@ -59,12 +72,28 @@ def load_yaml_file_custom(filepath):
                             if required_index > -1:
                                 # Trim any whitespace after the colon before capturing the value
                                 comment_dict['required'] = comment[required_index:].lstrip()
+                        if 'description:' in comment_lower:
+                            description_index = comment_lower.find('description:') + 12  # Start after 'description:'
+                            if description_index > -1:
+                                # Trim any whitespace after the colon before capturing the value
+                                comment_dict['description'] = comment[description_index:].lstrip()
+
+                    # Handle multiline values
+                    if is_multiline_value(line):
+                        value = "<multiline value>"
+                    else:
+                        value = data[key]
+
+                    # Handle long lists
+                    if isinstance(data[key], list) and len(data[key]) > 10:
+                        value = "<list too long>"
 
                     value_type = type(data[key]).__name__
                     result[key] = {
-                        'value': data[key],
+                        'value': value,
                         'title': comment_dict['title'],
                         'required': comment_dict['required'],
+                        'description': comment_dict['description'],
                         'line': idx + 1,
                         'type': value_type
                     }
