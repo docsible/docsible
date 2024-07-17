@@ -69,16 +69,39 @@ Description: Not available.
 **These are static variables with lower priority**
 {%- for defaultfile in role.defaults %}
 
-#### File: {{ defaultfile.file }}
-{# Cicle used for decide to set Title and Required Column #}
-{% set ns = namespace (details_required = false) %}{% set ns = namespace (details_title = false) %}
-{% for key, details in defaultfile.data.items() %}{% if details.required is not none %}{% set ns.details_required = true %}{% endif %}{% if details.title is not none %}{% set ns.details_title = true %}{% endif %}{% endfor %}
+#### File: defaults/{{ defaultfile.file }}
+{# Cycle used for deciding to set Title and Required Column #}
+{% set ns = namespace(details_required = false, details_title = false) %}
+{%- for key, details in defaultfile.data.items() -%}
+    {%- if details.required is not none -%}{%- set ns.details_required = true -%}{%- endif -%}
+    {%- if details.title is not none -%}{%- set ns.details_title = true -%}{%- endif -%}
+{%- endfor -%}
 | Var          | Type         | Value       |{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
 |--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
 | [{{ key }}](defaults/{{ defaultfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '\|') }}`  | {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '\|') }} |{% endif %}
 {%- endfor %}
+{%- endfor %}
+
+{%- for defaultfile in role.defaults -%}
+{%- set ns = namespace(has_descriptions = false) -%}
+{%- for key, details in defaultfile.data.items() -%}
+    {%- if details.description != "n/a" -%}{%- set ns.has_descriptions = true -%}{% endif -%}
+{%- endfor -%}
+{%- if ns.has_descriptions %}
+<details>
+<summary>🖇️ Full descriptions for vars in defaults/{{ defaultfile.file }}</summary>
+<br>
+{%- for key, details in defaultfile.data.items() %}
+    {%- if details.description != "n/a" %}
+<b>{{ key }}:</b> {{ details.description }}
+<br>
+    {%- endif %}
+{%- endfor %}
+<br>
+</details>
+{%- endif %}
 {%- endfor %}
 {%- else %}
 {%- endif %}
@@ -89,15 +112,39 @@ Description: Not available.
 
 **These are variables with higher priority**
 {%- for varsfile in role.vars %}
-#### File: {{ varsfile.file }}
-{# Cicle used for decide to set Title and Required Column #}
-{% set ns = namespace (details_required = false) %}{% set ns = namespace (details_title = false) %}{% for key, details in varsfile.data.items() %}{% if details.required is not none %}{% set ns.details_required = true %}{% endif %}{% if details.title is not none %}{% set ns.details_title = true %}{% endif %}{% endfor %}
-| Var          | Type         | Value       |{% if ns.details_required %} Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
+#### File: vars/{{ varsfile.file }}
+{# Cycle used for deciding to set Title and Required Column #}
+{% set ns = namespace(details_required = false, details_title = false) %}
+{%- for key, details in varsfile.data.items() -%}
+    {%- if details.required is not none -%}{%- set ns.details_required = true -%}{%- endif -%}
+    {%- if details.title is not none -%}{%- set ns.details_title = true -%}{%- endif -%}
+{%- endfor -%}
+| Var          | Type         | Value       |{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
 |--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
 | [{{ key }}](vars/{{ varsfile.file }}#L{{details.line}})    | {{ var_type }}   | `{{ details.value | replace('|', '\|') }}`  |{% if ns.details_required %} {{ details.required }} |{% endif %}{% if ns.details_title %} {{ details.title | replace('|', '\|') }} |{% endif %}
 {%- endfor %}
+{%- endfor %}
+
+{%- for varsfile in role.vars -%}
+{% set ns = namespace(has_descriptions = false) -%}
+{%- for key, details in varsfile.data.items() -%}
+    {%- if details.description != "n/a" -%}{%- set ns.has_descriptions = true -%}{%- endif %}
+{%- endfor %}
+{%- if ns.has_descriptions %}
+<details>
+<summary>🖇️ Full Descriptions for vars in vars/{{ varsfile.file }}</summary>
+<br>
+{%- for key, details in varsfile.data.items() %}
+    {%- if details.description != "n/a" %}
+<b>{{ key }}:</b> {{ details.description }}
+<br>
+    {%- endif %}
+{%- endfor %}
+<br>
+</details>
+{%- endif %}
 {%- endfor %}
 {%- else %}
 {%- endif %}
@@ -106,7 +153,7 @@ Description: Not available.
 ### Tasks
 
 {% for taskfile in role.tasks %}
-#### File: {{ taskfile.file }}
+#### File: tasks/{{ taskfile.file }}
 {% set ns = namespace (comments_required = false) %}{% for comment in taskfile['comments'] %}{% if comment != "" %}{% set ns.comments_required = true %}{% endif %}{% endfor %}
 | Name | Module | Has Conditions |{% if ns.comments_required %} Comments |{% endif %}
 | ---- | ------ | --------- |{% if ns.comments_required %}  -------- |{% endif %}
