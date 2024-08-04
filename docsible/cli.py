@@ -177,6 +177,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     readme_path = os.path.join(role_path, output)
     meta_path = os.path.join(role_path, "meta", "main.yml")
     docsible_path = os.path.join(role_path, ".docsible")
+    args_path = os.path.join(role_path, "meta", "argument_specs.yml")
     if not no_docsible:
         manage_docsible_file_keys(docsible_path)
 
@@ -189,6 +190,10 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     vars_data = load_yaml_files_from_dir_custom(
         os.path.join(role_path, "vars")) or []
 
+    # Load meta/argument_specs.yml when available
+    args = {}
+    if os.path.exists(args_path):
+        args = load_yaml_generic(args_path).get('argument_specs') if load_yaml_generic(args_path) else {}
     role_info = {
         "name": role_name,
         "defaults": defaults_data,
@@ -198,7 +203,8 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "playbook": {"content": playbook_content, "graph": 
                         generate_mermaid_playbook(yaml.safe_load(playbook_content)) if playbook_content else None},
         "docsible": load_yaml_generic(docsible_path) if not no_docsible else None,
-        "belongs_to_collection": belongs_to_collection
+        "belongs_to_collection": belongs_to_collection,
+        "args": args
     }
 
     tasks_dir = os.path.join(role_path, "tasks")
