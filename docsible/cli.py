@@ -15,7 +15,7 @@ DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 def get_version():
-    return "0.6.8"
+    return "0.6.9"
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
@@ -31,7 +31,7 @@ def manage_docsible_file_keys(docsible_path):
         'subCategory': None,
         'aap_hub': None,
         'critical': None,
-        'automation_kind': None 
+        'automation_kind': None
     }
     if os.path.exists(docsible_path):
         with open(docsible_path, 'r') as f:
@@ -177,12 +177,22 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     readme_path = os.path.join(role_path, output)
     meta_path = os.path.join(role_path, "meta", "main.yml")
     docsible_path = os.path.join(role_path, ".docsible")
+    argument_specs_path = os.path.join(role_path, "meta", "argument_specs.yml")
+
     if not no_docsible:
         manage_docsible_file_keys(docsible_path)
 
     # Check if meta/main.yml exist, otherwise try meta/main.yaml
     if not os.path.exists(meta_path):
         meta_path = os.path.join(role_path, "meta", "main.yaml")
+
+    if not os.path.exists(argument_specs_path):
+        argument_specs_path = os.path.join(role_path, "meta", "argument_specs.yaml")
+
+    if os.path.exists(argument_specs_path):
+        argument_specs = load_yaml_generic(argument_specs_path)
+    else:
+        argument_specs = None
 
     defaults_data = load_yaml_files_from_dir_custom(
         os.path.join(role_path, "defaults")) or []
@@ -198,7 +208,8 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "playbook": {"content": playbook_content, "graph": 
                         generate_mermaid_playbook(yaml.safe_load(playbook_content)) if playbook_content else None},
         "docsible": load_yaml_generic(docsible_path) if not no_docsible else None,
-        "belongs_to_collection": belongs_to_collection
+        "belongs_to_collection": belongs_to_collection,
+        "argument_specs": argument_specs
     }
 
     tasks_dir = os.path.join(role_path, "tasks")

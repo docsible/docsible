@@ -63,6 +63,50 @@ Description: Not available.
 {%- endif %}
 {%- endif %}
 
+{% macro render_arguments_list(arguments, level=0) %}
+{% for arg, details in arguments.items() %}
+  {%- set indent = '  ' * level %}
+  {{ indent }}- **{{ arg }}**
+  {{ indent }}  - **Required**: {{ details.required | default('false') }}
+  {{ indent }}  - **Type**: {{ details.type }}
+  {{ indent }}  - **Default**: {{ details.default | default('none') }}
+  {{ indent }}  - **Description**: {{ details.description | default('No description provided') }}
+  {% if details.choices is defined %}
+    {{ indent }}  - **Choices**: 
+    {% for choice in details.choices %}
+      {{ indent }}    - {{ choice }}
+    {% endfor %}
+  {% endif %}
+  {% if details.aliases is defined %}
+    {{ indent }}  - **Aliases**: 
+    {% for alias in details.aliases %}
+      {{ indent }}    - {{ alias }}
+    {% endfor %}
+  {% endif %}
+  {% if details.type == 'dict' and details.options %}
+    {{ render_arguments_list(details.options, level + 1) }}
+  {% elif details.type == 'list' and details.elements == 'dict' %}
+    {% for elem in details.default %}
+      {% if elem is mapping %}
+        {{ render_arguments_list(elem, level + 1) }}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+{% endmacro %}
+
+{% if role.argument_specs %}
+<details>
+<summary><b>🧩 Argument Specifications in meta/argument_specs</b></summary>
+{% for section, specs in role.argument_specs.argument_specs.items() %}
+#### Key: {{ section }} 
+**Description**: {{ specs.description or specs.short_description or 'No description provided' }}
+{{ render_arguments_list(specs.options) }}
+{% endfor %}
+</details>
+{% else %}
+{% endif %}
+
 {% if role.defaults|length > 0 -%}
 ### Defaults
 
@@ -91,7 +135,7 @@ Description: Not available.
 {%- endfor -%}
 {%- if ns.has_descriptions %}
 <details>
-<summary>🖇️ Full descriptions for vars in defaults/{{ defaultfile.file }}</summary>
+<summary><b>🖇️ Full descriptions for vars in defaults/{{ defaultfile.file }}</b></summary>
 <br>
 {%- for key, details in defaultfile.data.items() %}
     {%- if details.description != "n/a" %}
@@ -134,7 +178,7 @@ Description: Not available.
 {%- endfor %}
 {%- if ns.has_descriptions %}
 <details>
-<summary>🖇️ Full Descriptions for vars in vars/{{ varsfile.file }}</summary>
+<summary><b>🖇️ Full Descriptions for vars in vars/{{ varsfile.file }}</b></summary>
 <br>
 {%- for key, details in varsfile.data.items() %}
     {%- if details.description != "n/a" %}
