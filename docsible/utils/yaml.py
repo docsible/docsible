@@ -77,6 +77,32 @@ def load_yaml_file_custom(filepath):
                             if description_index > -1:
                                 # Trim any whitespace after the colon before capturing the value
                                 comment_dict['description'] = comment[description_index:].lstrip()
+                        if 'description-lines:' in comment_lower:
+                            description_lines = []
+                            start_collecting = False  # Flag to start collecting lines
+
+                            # Process all subsequent lines to collect description content
+                            for subsequent_line in lines[comment_index:]:
+                                line_content = subsequent_line.strip()
+
+                                # Start collecting after `description-lines:`
+                                if line_content.startswith("# description-lines:"):
+                                    start_collecting = True
+                                    continue
+
+                                # Stop collecting when encountering `# end`
+                                if line_content.startswith("# end"):
+                                    break
+
+                                if start_collecting:
+                                    if line_content.startswith("#"):
+                                        description_lines.append(f'{line_content[1:].strip()}<br>')  # Collect the line content
+                                    else:
+                                        break  # Stop if a non-comment line is encountered
+
+                            # Join all collected lines into a single description string
+                            if description_lines:
+                                comment_dict['description'] = "\n".join(description_lines)
 
                     # Handle multiline values
                     if is_multiline_value(line):
@@ -115,26 +141,40 @@ def load_yaml_files_from_dir_custom(dir_path):
                     collected_data.append({'file': yaml_file, 'data': file_data})
     return collected_data
 
-def get_task_commensts(filepath):
-    # read task file
+def get_task_comments(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
     task_comments = []
-    task_comment = {}
     comment_line = ""
     for line in lines:
         stripped_line = line.strip()
-        # the line is a comment, ad it to buffer comment_line
+
+        # Check if the line is a comment and accumulate it
         if stripped_line.startswith("#"):
-            comment_line =  comment_line+ stripped_line.split("#", 1)[1].strip()
-        #if the line start with "- name:" assign to it the previous comment
-        elif stripped_line.startswith("- name:"):
             if comment_line:
-                task_name =  stripped_line.replace("- name:", "").split("#")[0].strip()
-                task_comment = { "task_name": task_name, "task_comments": comment_line }
-                task_comments.append(task_comment)
-                comment_line = ""
+                comment_line += " "  # Add space between lines
+            comment_line += stripped_line.split("#", 1)[1].strip()
+
+        # If the line starts with "- name:", it's a new task
+        elif stripped_line.startswith("- name:"):
+            task_name = stripped_line.replace("- name:", "").split("#")[0].strip()
+            if comment_line:
+                task_comments.append({
+                    "task_name": task_name,
+                    "task_comments": comment_line
+                })
+                comment_line = ""  # Reset the comment_line for the next task
+            else:
+                task_comments.append({
+                    "task_name": task_name,
+                    "task_comments": ""
+                })
+
+        # If a new task starts or another structure (like block) begins, reset comments
         else:
-            comment_line = ""
+            if stripped_line.startswith("-") and not stripped_line.startswith("- name:"):
+                if comment_line:
+                    task_comments[-1]["task_comments"] += " " + comment_line
+                comment_line = ""
     return task_comments
