@@ -7,7 +7,7 @@ from datetime import datetime
 from jinja2 import Environment, BaseLoader, FileSystemLoader 
 from docsible.markdown_template import static_template, collection_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
-from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_commensts
+from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments
 from docsible.utils.special_tasks_keys import process_special_task_keys
 
 DOCSIBLE_START_TAG = "<!-- DOCSIBLE START -->"
@@ -15,7 +15,7 @@ DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 def get_version():
-    return "0.6.9"
+    return "0.7.0"
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
@@ -225,7 +225,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
                         relative_path = os.path.relpath(file_path, tasks_dir)
                         task_info = {'file': relative_path, 'tasks': [], 'mermaid': [], "comments": []}
                         if comments:
-                            task_info['comments'] = get_task_commensts(file_path)
+                            task_info['comments'] = get_task_comments(file_path)
                         if not isinstance(tasks_data, list):
                             print(f"Unexpected data type for tasks in {task_file}. Skipping.")
                             continue
