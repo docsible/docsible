@@ -28,6 +28,12 @@ Docsible is a command-line interface (CLI) written in Python that automates the 
 
 ## Installation
 
+How to create virtual env with python3
+```bash
+python3 -m venv docsible
+source docsible/bin/activate
+```
+
 To install Docsible, you can run:
 
 ```bash
