@@ -2,7 +2,7 @@ import re
 
 
 def sanitize_for_mermaid_id(text):
-    text = text.replace(r"\|", "_")
+    text = text.replace("|", "_")
     # Allowing a-zA-Z0-9 as well as French accents
     return re.sub(r'[^a-zA-Z0-9À-ÿ]', '_', text)
 
@@ -93,7 +93,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                     check_style_included_tasks = task_module_include_tasks
                 sanitized_include_tasks_name = sanitize_for_mermaid_id(f"{check_style_included_tasks}{i}")
                 sanitized_include_tasks_title = sanitize_for_mermaid_id(f"{check_style_included_tasks}")
-                mermaid_data += f'\n  {last_node}-->|Include task| {sanitized_include_tasks_name}[\{sanitized_task_title}<br>include_task: {sanitized_include_tasks_title}\]:::includeTasks'
+                mermaid_data += f'\n  {last_node}-->|Include task| {sanitized_include_tasks_name}[{{{{{sanitized_task_title}}}}}<br>include_task: {{{{{sanitized_include_tasks_title}}}}}]:::includeTasks'
                 last_node = sanitized_include_tasks_name
                 if when_condition:
                     mermaid_data += f'\n  {sanitized_include_tasks_name}---|When: {sanitized_when_condition}| {sanitized_include_tasks_name}'
@@ -115,7 +115,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
             elif task_module_import_playbook:
                 sanitized_module_import_playbook_name = sanitize_for_mermaid_id(f"{task_module_import_playbook}{i}")
                 sanitized_module_import_playbook_title = sanitize_for_mermaid_id(f"{task_module_import_playbook}")
-                mermaid_data += f'\n  {last_node}-->|Import playbook| {sanitized_module_import_playbook_name}[/{sanitized_task_title}<br>import_playbook: {sanitized_module_import_playbook_title}\]:::importPlaybook'
+                mermaid_data += f'\n  {last_node}-->|Import playbook| {sanitized_module_import_playbook_name}[/{{{{{sanitized_task_title}}}}}<br>import_playbook: {{{{{sanitized_module_import_playbook_title}}}}}]:::importPlaybook'
                 last_node = sanitized_module_import_playbook_name
                 if when_condition:
                     mermaid_data += f'\n  {sanitized_module_import_playbook_name}---|When: {sanitized_when_condition}| {sanitized_module_import_playbook_name}'

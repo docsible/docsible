@@ -150,31 +150,26 @@ def get_task_comments(filepath):
     for line in lines:
         stripped_line = line.strip()
 
-        # Check if the line is a comment and accumulate it
+        # Accumulate comments found directly above each task
         if stripped_line.startswith("#"):
             if comment_line:
-                comment_line += " "  # Add space between lines
+                comment_line += " "
             comment_line += stripped_line.split("#", 1)[1].strip()
 
-        # If the line starts with "- name:", it's a new task
+        # If a new task starts with "- name:", capture the accumulated comments and task name
         elif stripped_line.startswith("- name:"):
-            task_name = stripped_line.replace("- name:", "").split("#")[0].strip()
-            if comment_line:
-                task_comments.append({
-                    "task_name": task_name,
-                    "task_comments": comment_line
-                })
-                comment_line = ""  # Reset the comment_line for the next task
-            else:
-                task_comments.append({
-                    "task_name": task_name,
-                    "task_comments": ""
-                })
+            task_name = stripped_line.replace("- name:", "").split("#")[0].strip().replace("|", "¦")
+            task_comments.append({
+                "task_name": task_name,
+                "task_comments": comment_line.strip()  # Trim excess whitespace
+            })
+            comment_line = ""  # Reset for the next task
 
-        # If a new task starts or another structure (like block) begins, reset comments
-        else:
-            if stripped_line.startswith("-") and not stripped_line.startswith("- name:"):
-                if comment_line:
-                    task_comments[-1]["task_comments"] += " " + comment_line
-                comment_line = ""
+        # Reset comments if a new list item or block begins, without a "- name:"
+        elif stripped_line.startswith("-") and not stripped_line.startswith("- name:"):
+            if comment_line:
+                # Append to the last task's comments to avoid losing data
+                task_comments[-1]["task_comments"] += " " + comment_line
+            comment_line = ""
+
     return task_comments
