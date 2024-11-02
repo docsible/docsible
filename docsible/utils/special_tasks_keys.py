@@ -3,7 +3,7 @@
 def escape_pipes(text):
     """Function to escape pipes in string or list"""
     if isinstance(text, str):
-        return text.replace("|", r"\|")
+        return text.replace("|", r"¦")
     if isinstance(text, list):
         return [escape_pipes(item) for item in text]
     return None

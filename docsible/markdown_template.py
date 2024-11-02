@@ -124,7 +124,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}](defaults/{{ defaultfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '\|') }}`  | {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '\|') }} |{% endif %}
+| [{{ key }}](defaults/{{ defaultfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}`  | {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -167,7 +167,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}](vars/{{ varsfile.file }}#L{{details.line}})    | {{ var_type }}   | `{{ details.value | replace('|', '\|') }}`  |{% if ns.details_required %} {{ details.required }} |{% endif %}{% if ns.details_title %} {{ details.title | replace('|', '\|') }} |{% endif %}
+| [{{ key }}](vars/{{ varsfile.file }}#L{{details.line}})    | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}`  |{% if ns.details_required %} {{ details.required }} |{% endif %}{% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -202,7 +202,7 @@ Description: Not available.
 | Name | Module | Has Conditions |{% if ns.comments_required %} Comments |{% endif %}
 | ---- | ------ | --------- |{% if ns.comments_required %}  -------- |{% endif %}
 {%- for task in taskfile.tasks %}
-| {{ task.name }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
+| {{ task.name.replace("|", "¦") }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
 {%- endfor %}
 {% endfor %}
 
