@@ -58,7 +58,8 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
             if isinstance(when_condition, list):
                 when_condition = " AND ".join(when_condition)
             sanitized_when_condition = f"**{sanitize_for_condition(str(when_condition)).strip()}**"
-            sanitized_task_title += f'<br>When: {sanitized_when_condition}'
+            if 'When:' not in sanitized_task_title:
+                sanitized_task_title += f'<br>When: {sanitized_when_condition}'
         if block:
             block_start_node = sanitized_task_name + f'_block_start_{level}'
             mermaid_data += f'\n  {last_node}-->|Block Start| {block_start_node}[[{sanitized_task_title}]]:::block'
@@ -88,9 +89,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                     check_style_included_tasks = task_module_include_tasks
                 sanitized_include_tasks_name = sanitize_for_mermaid_id(f"{check_style_included_tasks}{i}")
                 sanitized_include_tasks_title = sanitize_for_title(f"{check_style_included_tasks}")
-                if when_condition:
-                    sanitized_include_tasks_title += f'<br>When: {sanitized_when_condition}'
-                mermaid_data += f'\n  {last_node}-->|Include task| {sanitized_include_tasks_name}[{{{{{sanitized_task_title}}}}}<br>include_task: {{{{{sanitized_include_tasks_title}}}}}]:::includeTasks'
+                mermaid_data += f'\n  {last_node}-->|Include task| {sanitized_include_tasks_name}[{sanitized_task_title}<br>include_task: {sanitized_include_tasks_title}]:::includeTasks'
                 last_node = sanitized_include_tasks_name
 
             elif task_module_import_tasks:
@@ -100,8 +99,6 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                     check_style_imported_tasks = task_module_import_tasks
                 sanitized_imported_tasks_name = sanitize_for_mermaid_id(f"{check_style_imported_tasks}{i}")
                 sanitized_imported_tasks_title = sanitize_for_title(f"{check_style_imported_tasks}")
-                if when_condition:
-                    sanitized_imported_tasks_title += f'<br>When: {sanitized_when_condition}'
                 mermaid_data += f'\n  {last_node}-->|Import task| {sanitized_imported_tasks_name}[/{sanitized_task_title}<br>import_task: {sanitized_imported_tasks_title}/]:::importTasks'
                 last_node = sanitized_imported_tasks_name
 
@@ -112,9 +109,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                     check_style_import_playbook = task_module_import_playbook
                 sanitized_import_playbook_name = sanitize_for_mermaid_id(f"{check_style_import_playbook}{i}")
                 sanitized_import_playbook_title = sanitize_for_title(f"{check_style_import_playbook}")
-                if when_condition:
-                    sanitized_import_playbook_title += f'<br>When: {sanitized_when_condition}'
-                mermaid_data += f'\n  {last_node}-->|Import playbook| {sanitized_import_playbook_name}[/{{{{{sanitized_task_title}}}}}<br>import_playbook: {{{{{sanitized_import_playbook_title}}}}}]:::importPlaybook'
+                mermaid_data += f'\n  {last_node}-->|Import playbook| {sanitized_import_playbook_name}[/{sanitized_task_title}<br>import_playbook: {sanitized_import_playbook_title}/]:::importPlaybook'
                 last_node = sanitized_import_playbook_name
 
             elif task_module_include_role:
@@ -124,8 +119,6 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                     check_style_include_role = task_module_include_role
                 sanitized_include_role_name = sanitize_for_mermaid_id(f"{check_style_include_role}{i}")
                 sanitized_include_role_title = sanitize_for_title(check_style_include_role)
-                if when_condition:
-                    sanitized_include_role_title += f'<br>When: {sanitized_when_condition}'
                 mermaid_data += f'\n  {last_node}-->|Include role| {sanitized_include_role_name}({sanitized_task_title}<br>include_role: {sanitized_include_role_title}):::includeRole'
                 last_node = sanitized_include_role_name
 
@@ -136,8 +129,6 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                     check_style_import_role = task_module_import_role
                 sanitized_import_role_name = sanitize_for_mermaid_id(f"{check_style_import_role}{i}")
                 sanitized_import_role_title = sanitize_for_title(check_style_import_role)
-                if when_condition:
-                    sanitized_import_role_title += f'<br>When: {sanitized_when_condition}'
                 mermaid_data += f'\n  {last_node}-->|Import role| {sanitized_import_role_name}([{sanitized_task_title}<br>import_role: {sanitized_import_role_title}]):::importRole'
                 last_node = sanitized_import_role_name
 
@@ -148,8 +139,6 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                     check_style_include_vars = task_module_include_vars
                 sanitized_include_vars_name = sanitize_for_mermaid_id(f"{check_style_include_vars}{i}")
                 sanitized_include_vars_title = sanitize_for_title(check_style_include_vars)
-                if when_condition:
-                    sanitized_include_vars_title += f'<br>When: {sanitized_when_condition}'
                 mermaid_data += f'\n  {last_node}-->|Include vars| {sanitized_include_vars_name}[{sanitized_task_title}<br>include_vars: {sanitized_include_vars_title}]:::includeVars'
                 last_node = sanitized_include_vars_name
 
