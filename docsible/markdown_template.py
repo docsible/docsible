@@ -115,16 +115,17 @@ Description: Not available.
 
 #### File: defaults/{{ defaultfile.file }}
 {# Cycle used for deciding to set Title and Required Column #}
-{% set ns = namespace(details_required = false, details_title = false) %}
+{% set ns = namespace(details_required = false, details_title = false, details_choices = false) %}
 {%- for key, details in defaultfile.data.items() -%}
     {%- if details.required is not none -%}{%- set ns.details_required = true -%}{%- endif -%}
     {%- if details.title is not none -%}{%- set ns.details_title = true -%}{%- endif -%}
+    {%- if details.choices != "n/a" -%}{%- set ns.details_choices = true -%}{%- endif -%}
 {%- endfor -%}
-| Var          | Type         | Value       |{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
-|--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
+| Var          | Type         | Value       |{% if ns.details_choices %}Choices    |{% endif %}{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
+|--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}](defaults/{{ defaultfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}`  | {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}](defaults/{{ defaultfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -158,16 +159,17 @@ Description: Not available.
 {%- for varsfile in role.vars %}
 #### File: vars/{{ varsfile.file }}
 {# Cycle used for deciding to set Title and Required Column #}
-{% set ns = namespace(details_required = false, details_title = false) %}
+{% set ns = namespace(details_required = false, details_title = false, details_choices = false) %}
 {%- for key, details in varsfile.data.items() -%}
     {%- if details.required is not none -%}{%- set ns.details_required = true -%}{%- endif -%}
     {%- if details.title is not none -%}{%- set ns.details_title = true -%}{%- endif -%}
+    {%- if details.choices != "n/a" -%}{%- set ns.details_choices = true -%}{%- endif -%}
 {%- endfor -%}
-| Var          | Type         | Value       |{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
-|--------------|--------------|-------------|{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
+| Var          | Type         | Value       |{% if ns.details_choices %}Choices    |{% endif %}{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
+|--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}](vars/{{ varsfile.file }}#L{{details.line}})    | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}`  |{% if ns.details_required %} {{ details.required }} |{% endif %}{% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}](vars/{{ varsfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 

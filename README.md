@@ -127,6 +127,8 @@ The tool read comments placed before a variable, only if it begin with specific 
 
 `# required:` This tag will be used for popiulate the column **Required** of the README.md
 
+`# choices:` This optional tag will be used for popiulate the column **Choices** of the README.md
+
 ### On tasks
 
 The tool will read all the line before each `- name:` of the tasks that begin with `#`.
