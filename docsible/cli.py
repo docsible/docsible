@@ -234,9 +234,15 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
                                 print(f"Skipping unexpected data in {task_file}: {task}")
                                 continue
                             if task and len(task.keys()) > 0:
-                                processed_tasks = process_special_task_keys(task)
-                                task_info['tasks'].extend(processed_tasks)
-                                task_info['mermaid'].extend([task])
+                                task_name = task.get('name', 'Unnamed Task')
+                                module_name = next((key for key in task.keys() if not key.startswith('_') and key not in ['name', 'when', 'tags', 'register', 'ignore_errors', 'become', 'become_user']), 'Unknown')
+                                has_conditions = 'when' in task
+                                processed_task = {
+                                    'name': task_name,
+                                    'module': module_name,
+                                    'has_conditions': has_conditions
+                                }
+                                task_info['tasks'].append(processed_task)
 
                         role_info["tasks"].append(task_info)
 
