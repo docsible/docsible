@@ -28,7 +28,7 @@ def load_yaml_file_custom(filepath):
         
     Returns:
         dict: A dictionary with keys representing YAML keys and values containing the value,
-              title, required, description, line number, and type of each key.
+              title, required, choices, description, line number, and type of each key.
               Returns None if the file is empty or an error occurs.
     """
     try:
@@ -59,7 +59,7 @@ def load_yaml_file_custom(filepath):
                     comments.reverse()
 
                     # Initialize with default None values
-                    comment_dict = {'title': "n/a", 'required': "n/a", 'description': "n/a"}
+                    comment_dict = {'title': "n/a", 'required': "n/a", 'choices': "n/a", 'description': "n/a"}
                     for comment in comments:
                         comment_lower = comment.lower()
                         if 'title:' in comment_lower:
@@ -72,6 +72,11 @@ def load_yaml_file_custom(filepath):
                             if required_index > -1:
                                 # Trim any whitespace after the colon before capturing the value
                                 comment_dict['required'] = comment[required_index:].lstrip()
+                        if 'choices:' in comment_lower:
+                            choices_index = comment_lower.find('choices:') + 8  # Start after 'choices:'
+                            if choices_index > -1:
+                                # Trim any whitespace after the colon before capturing the value
+                                comment_dict['choices'] = comment[choices_index:].lstrip()
                         if 'description:' in comment_lower:
                             description_index = comment_lower.find('description:') + 12  # Start after 'description:'
                             if description_index > -1:
@@ -119,6 +124,7 @@ def load_yaml_file_custom(filepath):
                         'value': value,
                         'title': comment_dict['title'],
                         'required': comment_dict['required'],
+                        'choices': comment_dict['choices'],
                         'description': comment_dict['description'],
                         'line': idx + 1,
                         'type': value_type
