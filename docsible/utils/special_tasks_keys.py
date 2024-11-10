@@ -50,24 +50,30 @@ def process_special_task_keys(task, task_type='task'):
     task_name = task.get('name', 'Unnamed')
     task_when = escape_pipes(task.get('when', None))
     
-    # Check for 'action' key
+    # Determine module name based on known task indicators or default to 'unknown'
+    task_module = 'unknown'  # Default module if not found
     if 'action' in task:
         action = task['action']
         if isinstance(action, dict):
-            # The module name is the first key in the action dict
-            task_module = list(action.keys())[0]
+            task_module = list(action.keys())[0]  # Module name from action dict
         else:
-            # The module name is the value of the action key
-            task_module = action
+            task_module = action  # Module name as action string
     else:
-        # Exclude known task parameters and any keys starting with 'with_'
+        # Specific modules without 'action' key
+        for key in ('include_tasks', 'import_tasks', 'import_playbook', 'include_role', 'import_role'):
+            if key in task:
+                task_module = key
+                break
+
+    # Ensure only relevant modules are shown and not general parameters like 'name' or 'when'
+    if task_module == 'unknown':
         module_keys = [key for key in task.keys()
                        if key not in known_task_params and not key.startswith('with_')]
         task_module = module_keys[0] if module_keys else 'unknown'
 
     tasks.append({
         'name': escape_pipes(task_name),
-        'module': task_module,
+        'module': task_module if task_module != 'unknown' else '',  # Blank if unknown
         'type': task_type,
         'when': task_when
     })
