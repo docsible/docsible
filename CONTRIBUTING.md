@@ -17,7 +17,7 @@ Thank you for considering contributing to Docsible! We appreciate your effort an
 - **Add Remote Repository**: Set up the upstream remote to keep your fork in sync with the original repository.
 
     ```bash
-    git remote add upstream https://github.com/exaluc/docsible.git
+    git remote add upstream https://github.com/docsible/docsible.git
     ```
 
 ## Workflow

@@ -15,7 +15,7 @@ DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 def get_version():
-    return "0.7.7"
+    return "0.7.8"
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
@@ -159,6 +159,10 @@ def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comm
         if not os.path.exists(role_path) or not os.path.isdir(role_path):
             print(f"Folder {role_path} does not exist.")
             return
+
+        if playbook == 'tests/test.yml':
+            playbook = os.path.join(role_path, playbook)
+
         playbook_content = None
         if playbook:
             try:
