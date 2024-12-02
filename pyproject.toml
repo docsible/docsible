@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "docsible"
-version = "0.7.7"
+version = "0.7.8"
 description = "Document generator for ansible role/collection"
 authors = ["Lucian BLETAN <neuraluc@gmail.com>"]
+repository = "https://github.com/docsible/docsible"
 license = "MIT"
 readme = "README.md"
 classifiers = [

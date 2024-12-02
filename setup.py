@@ -3,12 +3,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='docsible',
-    version='0.7.7',
+    version='0.7.8',
     packages=find_packages(),
     include_package_data=True,
     author='Lucian BLETAN',
     author_email='neuraluc@gmail.com',
-    url='https://github.com/exaluc/docsible/',
+    url='https://github.com/docsible/docsible/',
     description='Document generator for ansible role/collection',
     long_description="",
     zip_safe=False,

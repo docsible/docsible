@@ -97,10 +97,8 @@ Docsible fetches information from the following files within the specified Ansib
 - `meta/main.yml/yaml`: For role metadata
 - `tasks/*.yml/yaml`: For tasks, including special task types and subfolders
 
-## Examples
-[Demo1 coffeemaker_midday role](https://github.com/exaluc/docsible/blob/main/examples/README_demo1.md)
-
-[Demo2 coffeemaker_morning role](https://github.com/exaluc/docsible/blob/main/examples/README_demo2.md)
+## Example
+[Thermo core simulator](https://github.com/docsible/thermo-core)
 
 ## Prerequisites
 
@@ -144,4 +142,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Author
 
-- [Lucian BLETAN](https://github.com/exaluc)
+- [Lucian BLETAN](https://github.com/ioluc)
