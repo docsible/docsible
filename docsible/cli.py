@@ -15,7 +15,7 @@ DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 def get_version():
-    return "0.7.8"
+    return "0.7.9"
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
@@ -209,8 +209,8 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         "vars": vars_data,
         "tasks": [],
         "meta": load_yaml_generic(meta_path) or {},
-        "playbook": {"content": playbook_content, "graph": 
-                        generate_mermaid_playbook(yaml.safe_load(playbook_content)) if playbook_content else None},
+        "playbook": {"content": playbook_content, "graph":
+                        generate_mermaid_playbook(yaml.safe_load(playbook_content)) if generate_graph and playbook_content else None},
         "docsible": load_yaml_generic(docsible_path) if not no_docsible else None,
         "belongs_to_collection": belongs_to_collection,
         "argument_specs": argument_specs
