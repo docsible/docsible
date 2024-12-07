@@ -139,7 +139,3 @@ For details on how to contribute, please read the [Contributing Guidelines](CONT
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Author
-
-- [Lucian BLETAN](https://github.com/ioluc)
