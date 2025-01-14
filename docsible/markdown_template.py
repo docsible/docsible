@@ -72,13 +72,13 @@ Description: Not available.
   {{ indent }}  - **Default**: {{ details.default | default('none') }}
   {{ indent }}  - **Description**: {{ details.description | default('No description provided') }}
   {% if details.choices is defined %}
-    {{ indent }}  - **Choices**: 
+    {{ indent }}  - **Choices**:
     {% for choice in details.choices %}
       {{ indent }}    - {{ choice }}
     {% endfor %}
   {% endif %}
   {% if details.aliases is defined %}
-    {{ indent }}  - **Aliases**: 
+    {{ indent }}  - **Aliases**:
     {% for alias in details.aliases %}
       {{ indent }}    - {{ alias }}
     {% endfor %}
@@ -99,7 +99,7 @@ Description: Not available.
 <details>
 <summary><b>🧩 Argument Specifications in meta/argument_specs</b></summary>
 {% for section, specs in role.argument_specs.argument_specs.items() %}
-#### Key: {{ section }} 
+#### Key: {{ section }}
 **Description**: {{ specs.description or specs.short_description or 'No description provided' }}
 {{ render_arguments_list(specs.options) }}
 {% endfor %}
@@ -268,7 +268,7 @@ collection_template = """
 
 **Version**: {{ collection.version }}
 
-**Authors**: 
+**Authors**:
 {% for author in collection.authors %}{{ author }}{% if not loop.last %}\n {% endif %}{% endfor %}
 
 {% if collection.description %}
@@ -279,7 +279,7 @@ collection_template = """
 ## Roles
 {% for role in roles %}
 ### [{{ role.name }}](roles/{{ role.name }}/README.md)
-- Description: {{ role.meta.galaxy_info.description }}
+- Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {% endfor %}
 
 ## Metadata
