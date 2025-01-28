@@ -269,30 +269,38 @@ collection_template = """
 **Version**: {{ collection.version }}
 
 **Authors**:
-{% for author in collection.authors %}{{ author }}{% if not loop.last %}\n {% endif %}{% endfor %}
+{% for author in collection.authors %}
+- {{ author }}\n
+{%- endfor %}
 
-{% if collection.description %}
+{% if collection.description -%}
 ## Description
+
 {{ collection.description }}
-{% endif %}
+{%- endif %}
 
 ## Roles
 {% for role in roles %}
 ### [{{ role.name }}](roles/{{ role.name }}/README.md)
-- Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
-{% endfor %}
 
+{% if role.meta and role.meta.galaxy_info -%}
+- Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
+{%- else -%}
+No description available.
+{%- endif %}
+{% endfor %}
 ## Metadata
-{% if collection.repository %}
+
+{% if collection.repository -%}
 - **Repository**: [Repository]({{ collection.repository }})
 {% endif %}
-{% if collection.documentation %}
+{% if collection.documentation -%}
 - **Documentation**: [Documentation]({{ collection.documentation }})
 {% endif %}
-{% if collection.homepage %}
+{% if collection.homepage -%}
 - **Homepage**: [Homepage]({{ collection.homepage }})
 {% endif %}
-{% if collection.issues %}
+{% if collection.issues -%}
 - **Issues**: [Issues]({{ collection.issues }})
 {% endif %}
 """
