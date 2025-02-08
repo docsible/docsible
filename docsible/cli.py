@@ -15,7 +15,7 @@ DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
 timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 def get_version():
-    return "0.7.10"
+    return "0.7.11"
 
 def manage_docsible_file_keys(docsible_path):
     default_data = {
