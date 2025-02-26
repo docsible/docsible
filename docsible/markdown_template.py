@@ -280,7 +280,7 @@ collection_template = """
 {%- endif %}
 
 ## Roles
-{% for role in roles %}
+{% for role in roles|sort(attribute='name') %}
 ### [{{ role.name }}](roles/{{ role.name }}/README.md)
 
 {% if role.meta and role.meta.galaxy_info -%}
