@@ -4,7 +4,7 @@ import yaml
 import click
 from shutil import copyfile
 from datetime import datetime
-from jinja2 import Environment, BaseLoader, FileSystemLoader 
+from jinja2 import Environment, BaseLoader, FileSystemLoader
 from docsible.markdown_template import static_template, collection_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
 from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments
@@ -36,7 +36,7 @@ def manage_docsible_file_keys(docsible_path):
     if os.path.exists(docsible_path):
         with open(docsible_path, 'r') as f:
             existing_data = yaml.safe_load(f) or {}
-        
+
         updated_data = {**default_data, **existing_data}
         if updated_data != existing_data:
             # Update dt_update field if docsible keys added
@@ -50,7 +50,7 @@ def manage_docsible_file_keys(docsible_path):
         print(f"Initialized {docsible_path} with default keys.")
 
 def manage_docsible_tags(content):
-    return f"{DOCSIBLE_START_TAG}\n{content}\n{DOCSIBLE_END_TAG}"
+    return f"{DOCSIBLE_START_TAG}\n{content}\n{DOCSIBLE_END_TAG}\n"
 
 def replace_between_tags(existing_content, new_content):
     start_index = existing_content.find(DOCSIBLE_START_TAG)
@@ -75,7 +75,7 @@ def render_readme_template(collection_metadata, roles_info, output_path, append)
     }
     new_content = template.render(data)
     new_content = manage_docsible_tags(new_content)
-    
+
     if os.path.exists(output_path):
         with open(output_path, 'r', encoding='utf-8') as f:
             existing_readme = f.read()
@@ -88,7 +88,7 @@ def render_readme_template(collection_metadata, roles_info, output_path, append)
             final_content = new_content
     else:
         final_content = new_content
-    
+
     with open(output_path, 'w', encoding='utf-8') as readme_file:
         readme_file.write(final_content)
     print(f"Collection README.md written at: {output_path}")
@@ -255,7 +255,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     mermaid_code_per_file = {}
     if generate_graph:
         mermaid_code_per_file = generate_mermaid_role_tasks_per_file(role_info["tasks"])
-    
+
     # Render the static template
     if md_template:
         template_dir = os.path.dirname(md_template)
@@ -267,7 +267,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         template = env.from_string(static_template)
     new_content = template.render(role=role_info, mermaid_code_per_file=mermaid_code_per_file)
     new_content = manage_docsible_tags(new_content)
-    
+
     if os.path.exists(readme_path):
         with open(readme_path, 'r', encoding='utf-8') as f:
             existing_readme = f.read()
@@ -280,7 +280,7 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
             final_content = new_content
     else:
         final_content = new_content
-    
+
     with open(readme_path, "w", encoding='utf-8') as f:
         f.write(final_content)
 
