@@ -54,7 +54,7 @@ def manage_docsible_file_keys(docsible_path):
 
 
 def manage_docsible_tags(content):
-    return f"{DOCSIBLE_START_TAG}\n{content}\n{DOCSIBLE_END_TAG}"
+    return f"{DOCSIBLE_START_TAG}\n{content}\n{DOCSIBLE_END_TAG}\n"
 
 
 def replace_between_tags(existing_content, new_content):
