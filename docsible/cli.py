@@ -63,12 +63,19 @@ def replace_between_tags(existing_content, new_content):
     else:
         return existing_content + '\n' + new_content.strip()
 
-def render_readme_template(collection_metadata, roles_info, output_path, append):
+def render_readme_template(collection_metadata, md_collection_template, roles_info, output_path, append):
     """
     Render the collection README.md using an embedded Jinja template.
     """
-    env = Environment(loader=BaseLoader())
-    template = env.from_string(collection_template)
+    # Render the static template
+    if md_collection_template:
+        template_dir = os.path.dirname(md_collection_template)
+        template_file = os.path.basename(md_collection_template)
+        env = Environment(loader=FileSystemLoader(template_dir))
+        template = env.get_template(template_file)
+    else:
+        env = Environment(loader=BaseLoader)
+        template = env.from_string(collection_template)
     data = {
         'collection': collection_metadata,
         'roles': roles_info
@@ -93,7 +100,7 @@ def render_readme_template(collection_metadata, roles_info, output_path, append)
         readme_file.write(final_content)
     print(f"Collection README.md written at: {output_path}")
 
-def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_role_template, append, output):
+def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_collection_template, md_role_template, append, output):
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
@@ -132,7 +139,7 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
                         role_info = document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_role_template, belongs_to_collection=collection_metadata, append=append, output=output)
                         roles_info.append(role_info)
 
-            render_readme_template(collection_metadata, roles_info, readme_path, append)
+            render_readme_template(collection_metadata, md_collection_template, roles_info, readme_path, append)
 
 @click.command()
 @click.option('--role', '-r', default=None, help='Path to the Ansible role directory.')
@@ -142,18 +149,19 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
 @click.option('--no-backup', '-nob', is_flag=True, help='Do not backup the readme before remove.')
 @click.option('--no-docsible', '-nod', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
 @click.option('--comments', '-com', is_flag=True, help='Read comments from tasks files')
+@click.option('--md-collection-template', '-ct', default=None, help='Path to the collection markdown template file.')
 @click.option('--md-role-template', '-rt', '--md-template', '-tpl', default=None, help='Path to the role markdown template file.')
 @click.option('--append', '-a', is_flag=True, help='Append to the existing README.md instead of replacing it.')
 @click.option('--output', '-o', default='README.md', help='Output readme file name.')
 @click.version_option(version=get_version(), help=f"Show the module version. Actual is {get_version()}")
 
-def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_role_template, append, output):
+def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_collection_template, md_role_template, append, output):
     if collection:
         collection_path = os.path.abspath(collection)
         if not os.path.exists(collection_path) or not os.path.isdir(collection_path):
             print(f"Folder {collection_path} does not exist.")
             return
-        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_role_template, append, output)
+        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_collection_template, md_role_template, append, output)
     elif role:
         role_path = os.path.abspath(role)
         if not os.path.exists(role_path) or not os.path.isdir(role_path):
