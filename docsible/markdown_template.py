@@ -111,7 +111,7 @@ Description: Not available.
 ### Defaults
 
 **These are static variables with lower priority**
-{%- for defaultfile in role.defaults %}
+{%- for defaultfile in role.defaults|sort(attribute='file') %}
 
 #### File: defaults/{{ defaultfile.file }}
 {# Cycle used for deciding to set Title and Required Column #}
@@ -129,7 +129,7 @@ Description: Not available.
 {%- endfor %}
 {%- endfor %}
 
-{%- for defaultfile in role.defaults -%}
+{%- for defaultfile in role.defaults|sort(attribute='file') -%}
 {%- set ns = namespace(has_descriptions = false) -%}
 {%- for key, details in defaultfile.data.items() -%}
     {%- if details.description != "n/a" -%}{%- set ns.has_descriptions = true -%}{% endif -%}
@@ -156,7 +156,7 @@ Description: Not available.
 ### Vars
 
 **These are variables with higher priority**
-{%- for varsfile in role.vars %}
+{%- for varsfile in role.vars|sort(attribute='file') %}
 #### File: vars/{{ varsfile.file }}
 {# Cycle used for deciding to set Title and Required Column #}
 {% set ns = namespace(details_required = false, details_title = false, details_choices = false) %}
@@ -173,7 +173,7 @@ Description: Not available.
 {%- endfor %}
 {%- endfor %}
 
-{%- for varsfile in role.vars -%}
+{%- for varsfile in role.vars|sort(attribute='file') -%}
 {% set ns = namespace(has_descriptions = false) -%}
 {%- for key, details in varsfile.data.items() -%}
     {%- if details.description != "n/a" -%}{%- set ns.has_descriptions = true -%}{%- endif %}
@@ -198,7 +198,7 @@ Description: Not available.
 
 ### Tasks
 
-{% for taskfile in role.tasks %}
+{% for taskfile in role.tasks|sort(attribute='file') %}
 #### File: tasks/{{ taskfile.file }}
 {% set ns = namespace (comments_required = false) %}{% for comment in taskfile['comments'] %}{% if comment != "" %}{% set ns.comments_required = true %}{% endif %}{% endfor %}
 | Name | Module | Has Conditions |{% if ns.comments_required %} Comments |{% endif %}
