@@ -111,7 +111,6 @@ Docsible works with Python 3.x and requires the following libraries:
 ## TODO
 - Clean the code
 - Add more features
-- Custom templates for collection
 - Multiple playbooks handle into mermaid for collection and role
 
 ## About comments
