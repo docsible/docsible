@@ -42,12 +42,18 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
     for i, task in enumerate(tasks):
         has_rescue = False
         task_name = task.get("name", f"Unnamed_task_{i}")
-        task_module_include_tasks = task.get("ansible.builtin.include_tasks") or task.get("include_tasks", False)
-        task_module_import_tasks = task.get("ansible.builtin.import_tasks") or task.get("import_tasks", False)
-        task_module_import_playbook = task.get("ansible.builtin.import_playbook") or task.get("import_playbook", False)
-        task_module_include_role = task.get("ansible.builtin.include_role") or task.get("include_role", False)
-        task_module_import_role = task.get("ansible.builtin.import_role") or task.get("import_role", False)
-        task_module_include_vars = task.get("ansible.builtin.include_vars") or task.get("include_vars", False)
+        task_module_include_tasks = task.get(
+            "ansible.builtin.include_tasks") or task.get("include_tasks", False)
+        task_module_import_tasks = task.get(
+            "ansible.builtin.import_tasks") or task.get("import_tasks", False)
+        task_module_import_playbook = task.get(
+            "ansible.builtin.import_playbook") or task.get("import_playbook", False)
+        task_module_include_role = task.get(
+            "ansible.builtin.include_role") or task.get("include_role", False)
+        task_module_import_role = task.get(
+            "ansible.builtin.import_role") or task.get("import_role", False)
+        task_module_include_vars = task.get(
+            "ansible.builtin.include_vars") or task.get("include_vars", False)
         when_condition = task.get("when", False)
         block = task.get("block", False)
         rescue = task.get("rescue", False)
@@ -67,7 +73,8 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                 block, block_start_node, mermaid_data, block_start_node, level + 1, in_rescue_block=False)
             if rescue:
                 has_rescue = True
-                rescue_start_node = sanitized_task_name + f'_rescue_start_{level}'
+                rescue_start_node = sanitized_task_name + \
+                    f'_rescue_start_{level}'
                 mermaid_data += f'\n  {last_node}-->|Rescue Start| {rescue_start_node}[{sanitized_task_title}]:::rescue'
                 last_node, mermaid_data = process_tasks(
                     rescue, rescue_start_node, mermaid_data, block_start_node, level + 1, in_rescue_block=True)
@@ -84,61 +91,79 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
 
             if task_module_include_tasks:
                 if isinstance(task_module_include_tasks, dict):
-                    check_style_included_tasks = task_module_include_tasks.get('file', task_module_include_tasks)
+                    check_style_included_tasks = task_module_include_tasks.get(
+                        'file', task_module_include_tasks)
                 else:
                     check_style_included_tasks = task_module_include_tasks
-                sanitized_include_tasks_name = sanitize_for_mermaid_id(f"{check_style_included_tasks}{i}")
-                sanitized_include_tasks_title = sanitize_for_title(f"{check_style_included_tasks}")
+                sanitized_include_tasks_name = sanitize_for_mermaid_id(
+                    f"{check_style_included_tasks}{i}")
+                sanitized_include_tasks_title = sanitize_for_title(
+                    f"{check_style_included_tasks}")
                 mermaid_data += f'\n  {last_node}-->|Include task| {sanitized_include_tasks_name}[{sanitized_task_title}<br>include_task: {sanitized_include_tasks_title}]:::includeTasks'
                 last_node = sanitized_include_tasks_name
 
             elif task_module_import_tasks:
                 if isinstance(task_module_import_tasks, dict):
-                    check_style_imported_tasks = task_module_import_tasks.get('file', task_module_import_tasks)
+                    check_style_imported_tasks = task_module_import_tasks.get(
+                        'file', task_module_import_tasks)
                 else:
                     check_style_imported_tasks = task_module_import_tasks
-                sanitized_imported_tasks_name = sanitize_for_mermaid_id(f"{check_style_imported_tasks}{i}")
-                sanitized_imported_tasks_title = sanitize_for_title(f"{check_style_imported_tasks}")
+                sanitized_imported_tasks_name = sanitize_for_mermaid_id(
+                    f"{check_style_imported_tasks}{i}")
+                sanitized_imported_tasks_title = sanitize_for_title(
+                    f"{check_style_imported_tasks}")
                 mermaid_data += f'\n  {last_node}-->|Import task| {sanitized_imported_tasks_name}[/{sanitized_task_title}<br>import_task: {sanitized_imported_tasks_title}/]:::importTasks'
                 last_node = sanitized_imported_tasks_name
 
             elif task_module_import_playbook:
                 if isinstance(task_module_import_playbook, dict):
-                    check_style_import_playbook = task_module_import_playbook.get('file', task_module_import_playbook)
+                    check_style_import_playbook = task_module_import_playbook.get(
+                        'file', task_module_import_playbook)
                 else:
                     check_style_import_playbook = task_module_import_playbook
-                sanitized_import_playbook_name = sanitize_for_mermaid_id(f"{check_style_import_playbook}{i}")
-                sanitized_import_playbook_title = sanitize_for_title(f"{check_style_import_playbook}")
+                sanitized_import_playbook_name = sanitize_for_mermaid_id(
+                    f"{check_style_import_playbook}{i}")
+                sanitized_import_playbook_title = sanitize_for_title(
+                    f"{check_style_import_playbook}")
                 mermaid_data += f'\n  {last_node}-->|Import playbook| {sanitized_import_playbook_name}[/{sanitized_task_title}<br>import_playbook: {sanitized_import_playbook_title}/]:::importPlaybook'
                 last_node = sanitized_import_playbook_name
 
             elif task_module_include_role:
                 if isinstance(task_module_include_role, dict):
-                    check_style_include_role = task_module_include_role.get('name', task_module_include_role)
+                    check_style_include_role = task_module_include_role.get(
+                        'name', task_module_include_role)
                 else:
                     check_style_include_role = task_module_include_role
-                sanitized_include_role_name = sanitize_for_mermaid_id(f"{check_style_include_role}{i}")
-                sanitized_include_role_title = sanitize_for_title(check_style_include_role)
+                sanitized_include_role_name = sanitize_for_mermaid_id(
+                    f"{check_style_include_role}{i}")
+                sanitized_include_role_title = sanitize_for_title(
+                    check_style_include_role)
                 mermaid_data += f'\n  {last_node}-->|Include role| {sanitized_include_role_name}({sanitized_task_title}<br>include_role: {sanitized_include_role_title}):::includeRole'
                 last_node = sanitized_include_role_name
 
             elif task_module_import_role:
                 if isinstance(task_module_import_role, dict):
-                    check_style_import_role = task_module_import_role.get('name', task_module_import_role)
+                    check_style_import_role = task_module_import_role.get(
+                        'name', task_module_import_role)
                 else:
                     check_style_import_role = task_module_import_role
-                sanitized_import_role_name = sanitize_for_mermaid_id(f"{check_style_import_role}{i}")
-                sanitized_import_role_title = sanitize_for_title(check_style_import_role)
+                sanitized_import_role_name = sanitize_for_mermaid_id(
+                    f"{check_style_import_role}{i}")
+                sanitized_import_role_title = sanitize_for_title(
+                    check_style_import_role)
                 mermaid_data += f'\n  {last_node}-->|Import role| {sanitized_import_role_name}([{sanitized_task_title}<br>import_role: {sanitized_import_role_title}]):::importRole'
                 last_node = sanitized_import_role_name
 
             elif task_module_include_vars:
                 if isinstance(task_module_include_vars, dict):
-                    check_style_include_vars = task_module_include_vars.get('file', False) or task_module_include_vars.get('dir', task_module_include_vars)
+                    check_style_include_vars = task_module_include_vars.get(
+                        'file', False) or task_module_include_vars.get('dir', task_module_include_vars)
                 else:
                     check_style_include_vars = task_module_include_vars
-                sanitized_include_vars_name = sanitize_for_mermaid_id(f"{check_style_include_vars}{i}")
-                sanitized_include_vars_title = sanitize_for_title(check_style_include_vars)
+                sanitized_include_vars_name = sanitize_for_mermaid_id(
+                    f"{check_style_include_vars}{i}")
+                sanitized_include_vars_title = sanitize_for_title(
+                    check_style_include_vars)
                 mermaid_data += f'\n  {last_node}-->|Include vars| {sanitized_include_vars_name}[{sanitized_task_title}<br>include_vars: {sanitized_include_vars_title}]:::includeVars'
                 last_node = sanitized_include_vars_name
 
@@ -149,7 +174,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
     if parent_node and not in_rescue_block and not has_rescue:
         end_label = "End of Block"
         mermaid_data += f'\n  {last_node}-.->|{end_label}| {parent_node}'
-                
+
     return last_node, mermaid_data
 
 

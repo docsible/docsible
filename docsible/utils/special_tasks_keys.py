@@ -1,5 +1,6 @@
 """Module with function for manage block and rescue code"""
 
+
 def escape_pipes(text):
     """Function to escape pipes in string or list"""
     if isinstance(text, str):
@@ -29,7 +30,7 @@ def process_special_task_keys(task, task_type='task'):
         'prompt', 'wait_for', 'wait_for_connection', 'meta', 'fact_path',
         'host_vars', 'group_vars', 'role'
     }
-    
+
     for block_type in ('block', 'rescue', 'always'):
         if block_type in task:
             task_name = task.get('name', f'Unnamed_{block_type}')
@@ -42,20 +43,22 @@ def process_special_task_keys(task, task_type='task'):
                 'when': task_when
             })
             for sub_task in task[block_type]:
-                processed_tasks = process_special_task_keys(sub_task, block_type)
+                processed_tasks = process_special_task_keys(
+                    sub_task, block_type)
                 tasks.extend(processed_tasks)
             return tasks  # Exit after processing block, rescue, or always
 
     # Handle regular tasks
     task_name = task.get('name', 'Unnamed')
     task_when = escape_pipes(task.get('when', None))
-    
+
     # Determine module name based on known task indicators or default to 'unknown'
     task_module = 'unknown'  # Default module if not found
     if 'action' in task:
         action = task['action']
         if isinstance(action, dict):
-            task_module = list(action.keys())[0]  # Module name from action dict
+            # Module name from action dict
+            task_module = list(action.keys())[0]
         else:
             task_module = action  # Module name as action string
     else:

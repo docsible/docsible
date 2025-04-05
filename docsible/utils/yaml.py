@@ -2,12 +2,15 @@
 import os
 import yaml
 
+
 def vault_constructor(loader, node):
     # Handle '!vault' tag to prevent constructor issues
     return "ENCRYPTED_WITH_ANSIBLE_VAULT"
 
+
 # Register the custom constructor with the '!vault' tag.
 yaml.SafeLoader.add_constructor('!vault', vault_constructor)
+
 
 def load_yaml_generic(filepath):
     """Function to load YAML in a standard way"""
@@ -19,13 +22,14 @@ def load_yaml_generic(filepath):
         print(f"Error loading {filepath}: {e}")
         return None
 
+
 def load_yaml_file_custom(filepath):
     """
     Function to load YAML, evaluate comments and avoid reporting vault values.
-    
+
     Args:
         filepath (str): The path to the YAML file.
-        
+
     Returns:
         dict: A dictionary with keys representing YAML keys and values containing the value,
               title, required, choices, description, line number, and type of each key.
@@ -59,29 +63,38 @@ def load_yaml_file_custom(filepath):
                     comments.reverse()
 
                     # Initialize with default None values
-                    comment_dict = {'title': "n/a", 'required': "n/a", 'choices': "n/a", 'description': "n/a"}
+                    comment_dict = {'title': "n/a", 'required': "n/a",
+                                    'choices': "n/a", 'description': "n/a"}
                     for comment in comments:
                         comment_lower = comment.lower()
                         if 'title:' in comment_lower:
-                            title_index = comment_lower.find('title:') + 6  # Start after 'title:'
+                            title_index = comment_lower.find(
+                                'title:') + 6  # Start after 'title:'
                             if title_index > -1:
                                 # Trim any whitespace after the colon before capturing the value
-                                comment_dict['title'] = comment[title_index:].lstrip()
+                                comment_dict['title'] = comment[title_index:].lstrip(
+                                )
                         if 'required:' in comment_lower:
-                            required_index = comment_lower.find('required:') + 9  # Start after 'required:'
+                            required_index = comment_lower.find(
+                                'required:') + 9  # Start after 'required:'
                             if required_index > -1:
                                 # Trim any whitespace after the colon before capturing the value
-                                comment_dict['required'] = comment[required_index:].lstrip()
+                                comment_dict['required'] = comment[required_index:].lstrip(
+                                )
                         if 'choices:' in comment_lower:
-                            choices_index = comment_lower.find('choices:') + 8  # Start after 'choices:'
+                            choices_index = comment_lower.find(
+                                'choices:') + 8  # Start after 'choices:'
                             if choices_index > -1:
                                 # Trim any whitespace after the colon before capturing the value
-                                comment_dict['choices'] = comment[choices_index:].lstrip()
+                                comment_dict['choices'] = comment[choices_index:].lstrip(
+                                )
                         if 'description:' in comment_lower:
-                            description_index = comment_lower.find('description:') + 12  # Start after 'description:'
+                            description_index = comment_lower.find(
+                                'description:') + 12  # Start after 'description:'
                             if description_index > -1:
                                 # Trim any whitespace after the colon before capturing the value
-                                comment_dict['description'] = comment[description_index:].lstrip()
+                                comment_dict['description'] = comment[description_index:].lstrip(
+                                )
                         if 'description-lines:' in comment_lower:
                             description_lines = []
                             start_collecting = False  # Flag to start collecting lines
@@ -101,13 +114,16 @@ def load_yaml_file_custom(filepath):
 
                                 if start_collecting:
                                     if line_content.startswith("#"):
-                                        description_lines.append(f'{line_content[1:].strip()}<br>')  # Collect the line content
+                                        # Collect the line content
+                                        description_lines.append(
+                                            f'{line_content[1:].strip()}<br>')
                                     else:
                                         break  # Stop if a non-comment line is encountered
 
                             # Join all collected lines into a single description string
                             if description_lines:
-                                comment_dict['description'] = "\n".join(description_lines)
+                                comment_dict['description'] = "\n".join(
+                                    description_lines)
 
                     # Handle multiline values
                     if is_multiline_value(line):
@@ -136,16 +152,20 @@ def load_yaml_file_custom(filepath):
         print(f"Error loading {filepath}: {e}")
         return None
 
+
 def load_yaml_files_from_dir_custom(dir_path):
     """Function to load all YAML files from a given directory and include file names"""
     collected_data = []
     if os.path.exists(dir_path) and os.path.isdir(dir_path):
         for yaml_file in os.listdir(dir_path):
             if yaml_file.endswith(".yml") or yaml_file.endswith(".yaml"):
-                file_data = load_yaml_file_custom(os.path.join(dir_path, yaml_file))
+                file_data = load_yaml_file_custom(
+                    os.path.join(dir_path, yaml_file))
                 if file_data:
-                    collected_data.append({'file': yaml_file, 'data': file_data})
+                    collected_data.append(
+                        {'file': yaml_file, 'data': file_data})
     return collected_data
+
 
 def get_task_comments(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -164,7 +184,8 @@ def get_task_comments(filepath):
 
         # If a new task starts with "- name:", capture the accumulated comments and task name
         elif stripped_line.startswith("- name:"):
-            task_name = stripped_line.replace("- name:", "").split("#")[0].strip().replace("|", "¦")
+            task_name = stripped_line.replace(
+                "- name:", "").split("#")[0].strip().replace("|", "¦")
             task_comments.append({
                 "task_name": task_name,
                 "task_comments": comment_line.strip()  # Trim excess whitespace
