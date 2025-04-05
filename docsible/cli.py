@@ -17,7 +17,7 @@ timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 
 def get_version():
-    return "0.7.13"
+    return "0.7.14"
 
 
 def manage_docsible_file_keys(docsible_path):
@@ -124,6 +124,9 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
                         root, collection_metadata.get('readme', output))
                 else:
                     readme_path = os.path.join(root, output)
+
+            collection_metadata['repository_type'] = repo_type
+            collection_metadata['repository_branch'] = repo_branch
 
             if os.path.exists(readme_path) and not no_backup:
                 backup_path = f"{readme_path[:readme_path.lower().rfind('.md')]}_backup_{timestamp}.md"
@@ -237,10 +240,13 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         print(f"[WARN] Could not get Git info: {e}")
         git_info = {}
 
-    repository_url = repository_url or (
-        git_info.get("repository") if git_info else None)
-    repo_branch = repo_branch or (
-        git_info.get("branch") if git_info else "main")
+    if belongs_to_collection and isinstance(belongs_to_collection, dict):
+        repository_url = belongs_to_collection.get("repository")
+    else:
+        repository_url = repository_url or (
+            git_info.get("repository") if git_info else None)
+        repo_branch = repo_branch or (
+            git_info.get("branch") if git_info else "main")
 
     role_info = {
         "name": role_name,
