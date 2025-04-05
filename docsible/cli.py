@@ -17,7 +17,7 @@ timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 
 def get_version():
-    return "0.7.15"
+    return "0.7.16"
 
 
 def manage_docsible_file_keys(docsible_path):
@@ -112,6 +112,18 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
+    try:
+        git_info = get_repo_info(collection_path) or {}
+    except Exception as e:
+        print(f"[WARN] Could not get Git info: {e}")
+        git_info = {}
+    repository_url = repository_url or (
+        git_info.get("repository") if git_info else None)
+    repo_branch = repo_branch or (
+        git_info.get("branch") if git_info else "main")
+    repo_type = repo_type or (
+        git_info.get("repository_type") if git_info else None)
+
     for root, dirs, files in os.walk(collection_path):
         galaxy_file = next(
             (f for f in files if f in ['galaxy.yml', 'galaxy.yaml']), None)
@@ -172,7 +184,7 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
 @click.option('--output', '-o', default='README.md', help='Output readme file name.')
 @click.option('--repository-url', '-ru', default=None, help='Repository base URL (used for standalone roles)')
 @click.option('--repo-type', '-rt', default=None, help='Repository type: github, gitlab, gitea, etc.')
-@click.option('--repo-branch', '-rb', default='main', help='Repository branch name (e.g., main or master)')
+@click.option('--repo-branch', '-rb', default=None, help='Repository branch name (e.g., main or master)')
 @click.version_option(version=get_version(), help=f"Show the module version. Actual is {get_version()}")
 def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch):
     if collection:
@@ -239,11 +251,12 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     except Exception as e:
         print(f"[WARN] Could not get Git info: {e}")
         git_info = {}
-
     repository_url = repository_url or (
         git_info.get("repository") if git_info else None)
     repo_branch = repo_branch or (
         git_info.get("branch") if git_info else "main")
+    repo_type = repo_type or (
+        git_info.get("repository_type") if git_info else None)
 
     role_info = {
         "name": role_name,

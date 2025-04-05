@@ -107,17 +107,23 @@ Description: Not available.
 {% else %}
 {% endif %}
 
-{% macro render_repo_link(repo, role_name, file_path, line, repo_type='default', branch='main') -%}
-  {%- if repo and role_name and file_path and line is not none -%}
-    {%- set full_path = 'roles/' ~ role_name ~ '/' ~ file_path -%}
-    {%- if repo_type == 'github' -%}
-      {{ repo }}/blob/{{ branch }}/{{ full_path }}#L{{ line }}
-    {%- elif repo_type == 'gitlab' -%}
-      {{ repo }}/-/blob/{{ branch }}/{{ full_path }}#L{{ line }}
-    {%- elif repo_type == 'gitea' -%}
-      {{ repo }}/src/branch/{{ branch }}/{{ full_path }}#L{{ line }}
+{% macro render_repo_link(repo, role_name, file_path, line, repo_type, branch) -%}
+  {%- if repo and file_path and line is not none -%}
+    {%- if role.belongs_to_collection -%}
+      {%- set full_path = 'roles/' ~ role_name ~ '/' ~ file_path -%}
     {%- else -%}
-      {{ repo }}/{{ full_path }}#L{{ line }}
+      {%- set full_path = file_path -%}
+    {%- endif %}
+    {%- set encoded_path = full_path | replace(' ', '%20') -%}
+
+    {%- if repo_type == 'github' -%}
+      {{ repo }}/blob/{{ branch }}/{{ encoded_path }}#L{{ line }}
+    {%- elif repo_type == 'gitlab' -%}
+      {{ repo }}/-/blob/{{ branch }}/{{ encoded_path }}#L{{ line }}
+    {%- elif repo_type == 'gitea' -%}
+      {{ repo }}/src/branch/{{ branch }}/{{ encoded_path }}#L{{ line }}
+    {%- else -%}
+      {{ repo }}/{{ encoded_path }}#L{{ line }}
     {%- endif %}
   {%- else -%}
     {{ file_path }}#L{{ line }}
@@ -296,20 +302,21 @@ collection_template = """
 {{ collection.description }}
 {%- endif %}
 
-{% macro render_repo_role_readme_link(repo, role_name, repo_type='default', branch='main') -%}
+{% macro render_repo_role_readme_link(repo, role_name, repo_type, branch) -%}
   {%- if repo and role_name -%}
-    {%- set file_path = 'roles/' ~ role_name ~ '/README.md' -%}
+    {%- set file_path = 'roles/' ~ role_name -%}
+    {%- set encoded_path = file_path | replace(' ', '%20') -%}
     {%- if repo_type == 'github' -%}
-      {{ repo }}/blob/{{ branch }}/{{ file_path }}
+      {{ repo }}/tree/{{ branch }}/{{ encoded_path }}
     {%- elif repo_type == 'gitlab' -%}
-      {{ repo }}/-/blob/{{ branch }}/{{ file_path }}
+      {{ repo }}/-/tree/{{ branch }}/{{ encoded_path }}
     {%- elif repo_type == 'gitea' -%}
-      {{ repo }}/src/branch/{{ branch }}/{{ file_path }}
+      {{ repo }}/src/branch/{{ branch }}/{{ encoded_path }}
     {%- else -%}
-      {{ repo }}/{{ file_path }}
+      {{ repo }}/{{ encoded_path }}
     {%- endif %}
   {%- else -%}
-    roles/{{ role_name }}/README.md
+    roles/{{ role_name }}
   {%- endif %}
 {%- endmacro %}
 
