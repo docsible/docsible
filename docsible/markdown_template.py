@@ -296,9 +296,26 @@ collection_template = """
 {{ collection.description }}
 {%- endif %}
 
+{% macro render_repo_role_readme_link(repo, role_name, repo_type='default', branch='main') -%}
+  {%- if repo and role_name -%}
+    {%- set file_path = 'roles/' ~ role_name ~ '/README.md' -%}
+    {%- if repo_type == 'github' -%}
+      {{ repo }}/blob/{{ branch }}/{{ file_path }}
+    {%- elif repo_type == 'gitlab' -%}
+      {{ repo }}/-/blob/{{ branch }}/{{ file_path }}
+    {%- elif repo_type == 'gitea' -%}
+      {{ repo }}/src/branch/{{ branch }}/{{ file_path }}
+    {%- else -%}
+      {{ repo }}/{{ file_path }}
+    {%- endif %}
+  {%- else -%}
+    roles/{{ role_name }}/README.md
+  {%- endif %}
+{%- endmacro %}
+
 ## Roles
 {% for role in roles|sort(attribute='name') %}
-### [{{ role.name }}](roles/{{ role.name }}/README.md)
+### [{{ role.name }}]({{ render_repo_role_readme_link(collection.repository, role.name, collection.repository_type, collection.repository_branch) }})
 
 {% if role.meta and role.meta.galaxy_info -%}
 - Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
