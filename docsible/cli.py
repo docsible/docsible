@@ -240,13 +240,10 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
         print(f"[WARN] Could not get Git info: {e}")
         git_info = {}
 
-    if belongs_to_collection and isinstance(belongs_to_collection, dict):
-        repository_url = belongs_to_collection.get("repository")
-    else:
-        repository_url = repository_url or (
-            git_info.get("repository") if git_info else None)
-        repo_branch = repo_branch or (
-            git_info.get("branch") if git_info else "main")
+    repository_url = repository_url or (
+        git_info.get("repository") if git_info else None)
+    repo_branch = repo_branch or (
+        git_info.get("branch") if git_info else "main")
 
     role_info = {
         "name": role_name,
