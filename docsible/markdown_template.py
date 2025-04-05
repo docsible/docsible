@@ -107,6 +107,23 @@ Description: Not available.
 {% else %}
 {% endif %}
 
+{% macro render_repo_link(repo, role_name, file_path, line, repo_type='default', branch='main') -%}
+  {%- if repo and role_name and file_path and line is not none -%}
+    {%- set full_path = 'roles/' ~ role_name ~ '/' ~ file_path -%}
+    {%- if repo_type == 'github' -%}
+      {{ repo }}/blob/{{ branch }}/{{ full_path }}#L{{ line }}
+    {%- elif repo_type == 'gitlab' -%}
+      {{ repo }}/-/blob/{{ branch }}/{{ full_path }}#L{{ line }}
+    {%- elif repo_type == 'gitea' -%}
+      {{ repo }}/src/branch/{{ branch }}/{{ full_path }}#L{{ line }}
+    {%- else -%}
+      {{ repo }}/{{ full_path }}#L{{ line }}
+    {%- endif %}
+  {%- else -%}
+    {{ file_path }}#L{{ line }}
+  {%- endif %}
+{%- endmacro %}
+
 {% if role.defaults|length > 0 -%}
 ### Defaults
 
@@ -125,7 +142,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}](defaults/{{ defaultfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -169,7 +186,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}](vars/{{ varsfile.file }}#L{{details.line}})   | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | `{{ details.value | replace('|', '¦') }}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 

@@ -22,17 +22,18 @@ import argparse
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
+
 def change_version(version_str: str, bump: bool = True) -> str:
     """
     Change the patch version number.
-    
+
     Args:
         version_str (str): A semantic version string in the format 'major.minor.patch'
         bump (bool): If True, increment the patch version; if False, decrement it.
-    
+
     Returns:
         str: The updated version string.
-    
+
     Raises:
         ValueError: If the version format is invalid.
     """
@@ -50,10 +51,11 @@ def change_version(version_str: str, bump: bool = True) -> str:
         patch -= 1
     return f"{major}.{minor}.{patch}"
 
+
 def update_file(file_path: str, pattern: str, replacement_format: str, new_version: str):
     """
     Updates a file by replacing the version string with the new version.
-    
+
     Args:
         file_path (str): The path to the file.
         pattern (str): A regex pattern to find the version string.
@@ -68,10 +70,12 @@ def update_file(file_path: str, pattern: str, replacement_format: str, new_versi
     if not re.search(pattern, content):
         logging.error(f"Version string not found in {file_path}")
         sys.exit(1)
-    new_content = re.sub(pattern, replacement_format.format(new_version), content)
+    new_content = re.sub(
+        pattern, replacement_format.format(new_version), content)
     with open(file_path, "w") as f:
         f.write(new_content)
     logging.info(f"Updated {file_path}")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -123,9 +127,11 @@ def main():
     # Update all files with the new version.
     update_file(cli_file, cli_pattern, cli_replacement, new_version)
     update_file(setup_file, setup_pattern, setup_replacement, new_version)
-    update_file(pyproject_file, pyproject_pattern, pyproject_replacement, new_version)
-    
+    update_file(pyproject_file, pyproject_pattern,
+                pyproject_replacement, new_version)
+
     logging.info(f"Version update complete. New version: {new_version}")
+
 
 if __name__ == "__main__":
     main()
