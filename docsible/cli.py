@@ -112,17 +112,17 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
-    try:
-        git_info = get_repo_info(collection_path) or {}
-    except Exception as e:
-        print(f"[WARN] Could not get Git info: {e}")
-        git_info = {}
-    repository_url = repository_url or (
-        git_info.get("repository") if git_info else None)
-    repo_branch = repo_branch or (
-        git_info.get("branch") if git_info else "main")
-    repo_type = repo_type or (
-        git_info.get("repository_type") if git_info else None)
+    if repository_url == "detect":
+        try:
+            git_info = get_repo_info(collection_path) or {}
+        except Exception as e:
+            print(f"[WARN] Could not get Git info: {e}")
+            git_info = {}
+        repository_url = git_info.get("repository") if git_info else None
+        repo_branch = repo_branch or (
+            git_info.get("branch") if git_info else "main")
+        repo_type = repo_type or (
+            git_info.get("repository_type") if git_info else None)
 
     for root, dirs, files in os.walk(collection_path):
         galaxy_file = next(
@@ -246,17 +246,17 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
     vars_data = load_yaml_files_from_dir_custom(
         os.path.join(role_path, "vars")) or []
 
-    try:
-        git_info = get_repo_info(role_path) or {}
-    except Exception as e:
-        print(f"[WARN] Could not get Git info: {e}")
-        git_info = {}
-    repository_url = repository_url or (
-        git_info.get("repository") if git_info else None)
-    repo_branch = repo_branch or (
-        git_info.get("branch") if git_info else "main")
-    repo_type = repo_type or (
-        git_info.get("repository_type") if git_info else None)
+    if repository_url == "detect":
+        try:
+            git_info = get_repo_info(role_path) or {}
+        except Exception as e:
+            print(f"[WARN] Could not get Git info: {e}")
+            git_info = {}
+        repository_url = git_info.get("repository") if git_info else None
+        repo_branch = repo_branch or (
+            git_info.get("branch") if git_info else "main")
+        repo_type = repo_type or (
+            git_info.get("repository_type") if git_info else None)
 
     role_info = {
         "name": role_name,
