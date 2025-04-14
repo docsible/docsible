@@ -64,29 +64,44 @@ $ docsible --help
 Usage: docsible [OPTIONS]
 
 Options:
-  --role TEXT      Path to the Ansible role directory.
-  --collection TEXT Path to the Ansible collection directory.
-  --playbook TEXT  Path to the playbook file.
-  --graph          Generate Mermaid graph for tasks.
-  --no-backup      Do not backup the readme before remove.
-  --no-docsible    Do not create .docsible file and do not print relative variable to generated README.md.
-  --comments       Read comments from tasks files.
-  --md-template    Path to the markdown template file.
-  --append         Append to the existing README.md instead of replacing it.
-  --version        Show the module version.
-  --help           Show this message and exit.
+  -r, --role TEXT                 Path to the Ansible role directory.
+  -c, --collection TEXT           Path to the Ansible collection directory.
+  -p, --playbook TEXT             Path to the playbook file.
+  -g, --graph                     Generate Mermaid graph for tasks.
+  -nob, --no-backup               Do not backup the readme before remove.
+  -nod, --no-docsible             Do not generate .docsible file and do not include it in README.md.
+  -com, --comments                Read comments from tasks files
+  -ctpl, --md-collection-template TEXT Path to the collection markdown template file.
+  -rtpl, -tpl, --md-role-template, --md-template TEXT
+                                  Path to the role markdown template file.
+  -a, --append                    Append to the existing README.md instead of
+                                  replacing it.
+  -o, --output TEXT               Output readme file name.
+  -ru, --repository-url TEXT      Repository base URL (used for standalone roles)
+  -rt, --repo-type TEXT           Repository type: github, gitlab, gitea, etc.
+  -rb, --repo-branch TEXT         Repository branch name (e.g., main or master)
+  --version                       Show the module version. Actual is 0.7.17
+  --help                          Show this message and exit.
 ```
 
 ### Flags
 
 - `--role`: Specifies the directory path to the Ansible role.
 - `--collection`: Specifies the directory path to the Ansible collection.
-- `--playbook`: Specifies the path to the Ansible playbook (Optional). ( Works only with roles )
+- `--playbook`: Specifies the path to the Ansible playbook (Optional). (Works only with roles)
 - `--graph`: Generate mermaid for role and playbook.
 - `--no-backup`: Ignore existent README.md and remove before generate a new one. (Optional).
+- `--no-docsible`: Do not generate `.docsible` metadata file and exclude it from the README.md. (Optional).
 - `--comments`: Read comments from tasks files. (Optional).
-- `--md-template`: Specifies the path to the markdown template file (Optional). ( Works only with roles )
-- `--append`: Append existing readme.md if needed
+- `--md-template`: Specifies the path to the markdown template file (Optional). (Works only with roles)
+- `--md-collection-template`: Specifies the path to the markdown template file for documenting collections. (Optional).
+- `--append`: Append existing readme.md if needed.
+- `--output`: Output readme file name. Defaults to `README.md`.
+- `--repository-url`: Repository base URL (used for standalone roles). Use `detect` to auto-detect using Git, or provide a full URL.
+- `--repo-type`: Repository type: github, gitlab, gitea, etc. (Optional but needed if `detect` is not used with `--repository-url`).
+- `--repo-branch`: Repository branch name (e.g., main or master). (Optional but needed if `detect` is not used with `--repository-url`).
+- `--version`: Show the current module version and exit.
+- `--help`: Show this message and exit.
 
 ## Data Sources
 
@@ -134,6 +149,7 @@ All comment will be reported to the column **Comments** of the tasks tables.
 ## Contributing
 
 For details on how to contribute, please read the [Contributing Guidelines](CONTRIBUTING.md).
+Merge requests that do not follow the guidelines may be closed or require changes before being accepted.
 
 ## License
 
