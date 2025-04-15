@@ -280,6 +280,38 @@ Description: Not available.
 No platforms specified.
 {%- endif %}
 {%- endif %}
+
+#### Dependencies
+
+{% if role.meta.dependencies %}
+{%- for dep in role.meta.dependencies -%}
+- {% if dep is string -%}
+  **{{ dep }}**
+{%- elif dep.role -%}
+  **{{ dep.role }}**{% if dep.name %} (alias: _{{ dep.name }}_){% endif -%}{% if dep.version %} - version: `{{ dep.version }}`{% endif -%}
+  {% if dep.vars -%}
+    {%- set vars = dep.vars.items() | list -%}
+    {% if vars|length > 0 %}
+    - **Vars:**
+      {% for k, v in vars -%}
+      - {{ k }} = {{ v }}
+      {% endfor -%}
+    {%- endif -%}
+  {% endif %}
+  {% if dep.tags -%}
+    {% set tags = dep.tags if dep.tags is iterable and dep.tags is not string else [dep.tags] -%}
+    - **Tags:** {{ tags | join(', ') }}
+  {%- endif %}
+  {% if dep.when -%}
+    - **When:** `{{ dep.when }}`
+  {%- endif %}
+{%- else -%}
+  {{ dep | tojson(indent=0) }}
+{%- endif %}
+{% endfor -%}
+{%- else -%}
+No dependencies specified.
+{%- endif -%}
 """
 
 collection_template = """
