@@ -63,8 +63,8 @@ def load_yaml_file_custom(filepath):
                     comments.reverse()
 
                     # Initialize with default None values
-                    comment_dict = {'title': "n/a", 'required': "n/a",
-                                    'choices': "n/a", 'description': "n/a"}
+                    comment_dict = {'title': None, 'required': None,
+                                    'choices': None, 'description': None}
                     for comment in comments:
                         comment_lower = comment.lower()
                         if 'title:' in comment_lower:
