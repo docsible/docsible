@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='docsible',
-    version='0.7.18',
+    version='0.7.19',
     packages=find_packages(),
     include_package_data=True,
     author='Lucian BLETAN',
