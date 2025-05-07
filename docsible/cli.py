@@ -7,7 +7,7 @@ from datetime import datetime
 from jinja2 import Environment, BaseLoader, FileSystemLoader
 from docsible.markdown_template import static_template, collection_template
 from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
-from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments
+from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments, get_task_line_numbers
 from docsible.utils.special_tasks_keys import process_special_task_keys
 from docsible.utils.git import get_repo_info
 
@@ -178,6 +178,7 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
 @click.option('--no-backup', '-nob', is_flag=True, help='Do not backup the readme before remove.')
 @click.option('--no-docsible', '-nod', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
 @click.option('--comments', '-com', is_flag=True, help='Read comments from tasks files')
+@click.option('--task-line', '-tl', is_flag=True, help='Read line numbers from tasks')
 @click.option('--md-collection-template', '-ctpl', default=None, help='Path to the collection markdown template file.')
 @click.option('--md-role-template', '-rtpl', '--md-template', '-tpl', default=None, help='Path to the role markdown template file.')
 @click.option('--append', '-a', is_flag=True, help='Append to the existing README.md instead of replacing it.')
@@ -186,13 +187,13 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
 @click.option('--repo-type', '-rt', default=None, help='Repository type: github, gitlab, gitea, etc.')
 @click.option('--repo-branch', '-rb', default=None, help='Repository branch name (e.g., main or master)')
 @click.version_option(version=get_version(), help=f"Show the module version. Actual is {get_version()}")
-def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch):
+def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comments, task_line, md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch):
     if collection:
         collection_path = os.path.abspath(collection)
         if not os.path.exists(collection_path) or not os.path.isdir(collection_path):
             print(f"Folder {collection_path} does not exist.")
             return
-        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments,
+        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, task_line,
                                   md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch)
     elif role:
         role_path = os.path.abspath(role)
@@ -212,13 +213,13 @@ def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comm
                 print('playbook not found:', playbook)
             except Exception as e:
                 print('playbook import error:', e)
-        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_role_template, belongs_to_collection=False,
+        document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template, belongs_to_collection=False,
                       append=append, output=output, repository_url=repository_url, repo_type=repo_type, repo_branch=repo_branch)
     else:
         print("Please specify either a role or a collection path.")
 
 
-def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, md_role_template, belongs_to_collection, append, output, repository_url, repo_type, repo_branch):
+def document_role(role_path, playbook_content, generate_graph, no_backup, no_docsible, comments, task_line, md_role_template, belongs_to_collection, append, output, repository_url, repo_type, repo_branch):
     role_name = os.path.basename(role_path)
     readme_path = os.path.join(role_path, output)
     meta_path = os.path.join(role_path, "meta", "main.yml")
@@ -286,9 +287,12 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
                     if tasks_data:
                         relative_path = os.path.relpath(file_path, tasks_dir)
                         task_info = {'file': relative_path,
-                                     'tasks': [], 'mermaid': [], "comments": []}
+                                     'tasks': [], 'mermaid': [], "comments": [], 'lines': []}
                         if comments:
                             task_info['comments'] = get_task_comments(
+                                file_path)
+                        if task_line:
+                            task_info['lines'] = get_task_line_numbers(
                                 file_path)
                         if not isinstance(tasks_data, list):
                             print(
