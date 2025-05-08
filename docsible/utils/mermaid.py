@@ -96,7 +96,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                 else:
                     check_style_included_tasks = task_module_include_tasks
                 sanitized_include_tasks_name = sanitize_for_mermaid_id(
-                    f"{check_style_included_tasks}{i}")
+                    f"{task_name}_{check_style_included_tasks}_{i}")
                 sanitized_include_tasks_title = sanitize_for_title(
                     f"{check_style_included_tasks}")
                 mermaid_data += f'\n  {last_node}-->|Include task| {sanitized_include_tasks_name}[{sanitized_task_title}<br>include_task: {sanitized_include_tasks_title}]:::includeTasks'
@@ -109,7 +109,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                 else:
                     check_style_imported_tasks = task_module_import_tasks
                 sanitized_imported_tasks_name = sanitize_for_mermaid_id(
-                    f"{check_style_imported_tasks}{i}")
+                    f"{task_name}_{check_style_imported_tasks}_{i}")
                 sanitized_imported_tasks_title = sanitize_for_title(
                     f"{check_style_imported_tasks}")
                 mermaid_data += f'\n  {last_node}-->|Import task| {sanitized_imported_tasks_name}[/{sanitized_task_title}<br>import_task: {sanitized_imported_tasks_title}/]:::importTasks'
@@ -122,7 +122,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                 else:
                     check_style_import_playbook = task_module_import_playbook
                 sanitized_import_playbook_name = sanitize_for_mermaid_id(
-                    f"{check_style_import_playbook}{i}")
+                    f"{task_name}_{check_style_import_playbook}_{i}")
                 sanitized_import_playbook_title = sanitize_for_title(
                     f"{check_style_import_playbook}")
                 mermaid_data += f'\n  {last_node}-->|Import playbook| {sanitized_import_playbook_name}[/{sanitized_task_title}<br>import_playbook: {sanitized_import_playbook_title}/]:::importPlaybook'
@@ -135,7 +135,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                 else:
                     check_style_include_role = task_module_include_role
                 sanitized_include_role_name = sanitize_for_mermaid_id(
-                    f"{check_style_include_role}{i}")
+                    f"{task_name}_{check_style_include_role}_{i}")
                 sanitized_include_role_title = sanitize_for_title(
                     check_style_include_role)
                 mermaid_data += f'\n  {last_node}-->|Include role| {sanitized_include_role_name}({sanitized_task_title}<br>include_role: {sanitized_include_role_title}):::includeRole'
@@ -148,7 +148,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                 else:
                     check_style_import_role = task_module_import_role
                 sanitized_import_role_name = sanitize_for_mermaid_id(
-                    f"{check_style_import_role}{i}")
+                    f"{task_name}_{check_style_import_role}_{i}")
                 sanitized_import_role_title = sanitize_for_title(
                     check_style_import_role)
                 mermaid_data += f'\n  {last_node}-->|Import role| {sanitized_import_role_name}([{sanitized_task_title}<br>import_role: {sanitized_import_role_title}]):::importRole'
@@ -161,7 +161,7 @@ def process_tasks(tasks, last_node, mermaid_data, parent_node=None, level=0, in_
                 else:
                     check_style_include_vars = task_module_include_vars
                 sanitized_include_vars_name = sanitize_for_mermaid_id(
-                    f"{check_style_include_vars}{i}")
+                    f"{task_name}_{check_style_include_vars}_{i}")
                 sanitized_include_vars_title = sanitize_for_title(
                     check_style_include_vars)
                 mermaid_data += f'\n  {last_node}-->|Include vars| {sanitized_include_vars_name}[{sanitized_task_title}<br>include_vars: {sanitized_include_vars_title}]:::includeVars'
