@@ -200,3 +200,18 @@ def get_task_comments(filepath):
             comment_line = ""
 
     return task_comments
+
+def get_task_line_numbers(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+
+    tasks_lines = {}
+    for idx, line in enumerate(lines):
+        stripped_line = line.strip()
+
+        if stripped_line.startswith("- name:"):
+            task_name = stripped_line.replace(
+                "- name:", "").split("#")[0].strip().replace("|", "¦").replace("'", "").replace('"', "")
+            tasks_lines[task_name] = idx + 1
+
+    return tasks_lines
