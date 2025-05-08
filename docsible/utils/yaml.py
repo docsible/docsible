@@ -196,7 +196,8 @@ def get_task_comments(filepath):
         elif stripped_line.startswith("-") and not stripped_line.startswith("- name:"):
             if comment_line:
                 # Append to the last task's comments to avoid losing data
-                task_comments[-1]["task_comments"] += " " + comment_line
+                if task_comments:
+                    task_comments[-1]["task_comments"] += " " + comment_line
             comment_line = ""
 
     return task_comments
