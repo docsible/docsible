@@ -271,7 +271,7 @@ Description: Not available.
 #### File: tasks/{{ taskfile.file }}
 {% set ns = namespace (tags_required = false, comments_required = false) %}
 {%- for t in taskfile['mermaid'] %}
-  {%- if t['tags'] != "" %}{% set ns.tags_required = true %}{% endif %}
+  {%- if 'tags' in t and t['tags'] != "" %}{% set ns.tags_required = true %}{% endif %}
 {%- endfor %}
 {%- for comment in taskfile['comments'] %}
   {%- if comment != "" %}{% set ns.comments_required = true %}{% endif %}
