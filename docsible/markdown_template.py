@@ -144,6 +144,8 @@ Description: Not available.
 | {{key}}.{{ section_name }}.**{{ k }}** | {% if value is sameas true or value is sameas false %}bool{% elif value is string %}str{% else %}int{% endif %} | `{{ value }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
 {%-         endif %}
 {%-       endfor %}
+{%-     else %}
+| {{key}}.**{{ section_name }}** | {% if section is sameas true or section is sameas false %}bool{% elif section is string %}str{% else %}int{% endif %} | `{{ section }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
 {%-     endif %}
 {%-   endfor %}
 {%- endmacro %}
@@ -151,7 +153,7 @@ Description: Not available.
 {%- macro render_list(key,value,choices,required=false,title=false) -%}
 {%- for item in value %}
 {%-   if item is mapping %}
-{{-     render_dict(key, item, choices=choices,required=required,title=title) }}
+{{-     render_dict(key ~ "." ~  loop.index0, item, choices=choices,required=required,title=title) }}
 {%-   elif item is iterable and (item is not string and item is not mapping) %}
 {{-     render_list(key, item, choices=choices,required=required,title=title) }}
 {%-   else %}
@@ -231,13 +233,13 @@ Description: Not available.
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
 {%- if var_type == "dict" %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | `{}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {{- render_dict(key,details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
 {%- elif var_type == "list" %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | `[]` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {{- render_list(key, details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
 {%- else %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if value is sameas true or value is sameas false %}bool{% elif details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endif %}
 {%- endfor %}
 {%- endfor %}
