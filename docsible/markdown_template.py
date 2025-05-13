@@ -130,6 +130,36 @@ Description: Not available.
   {%- endif %}
 {%- endmacro %}
 
+{%- macro render_dict(key,value,choices,required=false,title=false) -%}
+{%-   for section_name, section in value.items() %}
+{%-     if section is mapping %}
+| {{key}}.**{{ section_name }}** | dict | `{}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
+{{-       render_dict(key + "." + section_name, section, choices=choices,required=required,title=title) }}
+{%-       for k, value in section.items() %}
+{%-         if value is mapping and value is not string %}
+{{-           render_dict(key + "." + k , value, choices=choices,required=required,title=title) }}
+{%-         elif value is iterable and (value is not string and value is not mapping) %}
+{{-           render_list(key + "." + section_name, value, choices=choices,required=required,title=title) }}
+{%-         else %}
+| {{key}}.{{ section_name }}.**{{ k }}** | {% if value is sameas true or value is sameas false %}bool{% elif value is string %}str{% else %}int{% endif %} | `{{ value }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
+{%-         endif %}
+{%-       endfor %}
+{%-     endif %}
+{%-   endfor %}
+{%- endmacro %}
+
+{%- macro render_list(key,value,choices,required=false,title=false) -%}
+{%- for item in value %}
+{%-   if item is mapping %}
+{{-     render_dict(key, item, choices=choices,required=required,title=title) }}
+{%-   elif item is iterable and (item is not string and item is not mapping) %}
+{{-     render_list(key, item, choices=choices,required=required,title=title) }}
+{%-   else %}
+| {{key}}.**{{ loop.index0 }}** | {% if item is sameas true or item is sameas false %}bool{% elif item is string %}str{% else %}int{% endif %} | `{{ item }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
+{%-   endif %}
+{%- endfor %}
+{%- endmacro %}
+
 {% if role.defaults|length > 0 -%}
 ### Defaults
 
@@ -145,10 +175,18 @@ Description: Not available.
     {%- if details.choices != None -%}{%- set ns.details_choices = true -%}{%- endif -%}
 {%- endfor -%}
 | Var          | Type         | Value       |{% if ns.details_choices %}Choices    |{% endif %}{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
-|--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
+|--------------|--------------|-------------|{% if ns.details_choices %}-----------|{% endif %}{% if ns.details_required %}------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- if var_type == "dict" %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | `{}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{{- render_dict(key,details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
+{%- elif var_type == "list" %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | `[]` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{{- render_list(key, details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
+{%- else %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -189,10 +227,18 @@ Description: Not available.
     {%- if details.choices != None -%}{%- set ns.details_choices = true -%}{%- endif -%}
 {%- endfor -%}
 | Var          | Type         | Value       |{% if ns.details_choices %}Choices    |{% endif %}{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
-|--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
+|--------------|--------------|-------------|{% if ns.details_choices %}-----------|{% endif %}{% if ns.details_required %}------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- if var_type == "dict" %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{{- render_dict(key,details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
+{%- elif var_type == "list" %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{{- render_list(key, details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
+{%- else %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if value is sameas true or value is sameas false %}bool{% elif details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -223,9 +269,15 @@ Description: Not available.
 
 {% for taskfile in role.tasks|sort(attribute='file') %}
 #### File: tasks/{{ taskfile.file }}
-{% set ns = namespace (comments_required = false) %}{% for comment in taskfile['comments'] %}{% if comment != "" %}{% set ns.comments_required = true %}{% endif %}{% endfor %}
-| Name | Module | Has Conditions |{% if ns.comments_required %} Comments |{% endif %}
-| ---- | ------ | --------- |{% if ns.comments_required %}  -------- |{% endif %}
+{% set ns = namespace (tags_required = false, comments_required = false) %}
+{%- for t in taskfile['mermaid'] %}
+  {%- if t['tags'] != "" %}{% set ns.tags_required = true %}{% endif %}
+{%- endfor %}
+{%- for comment in taskfile['comments'] %}
+  {%- if comment != "" %}{% set ns.comments_required = true %}{% endif %}
+{%- endfor %}
+| Name | Module | Has Conditions |{% if ns.tags_required %} Tags |{% endif %}{% if ns.comments_required %} Comments |{% endif %}
+| ---- | ------ | -------------- |{% if ns.tags_required %} -----|{% endif %}{% if ns.comments_required %} -------- |{% endif %}
 {%- for task in taskfile.tasks %}
 {%- if taskfile['lines'] | length > 0 %}
 | [{{ task.name.replace("|", "¦") }}]({{ render_repo_link(role.repository, role.name, 'tasks/' ~ taskfile.file, taskfile['lines'][task.name], role.repository_type, role.repository_branch) }}) | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {{ taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first | join(',') }} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
