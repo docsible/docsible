@@ -193,7 +193,7 @@ def doc_the_role(role, collection, playbook, graph, no_backup, no_docsible, comm
         if not os.path.exists(collection_path) or not os.path.isdir(collection_path):
             print(f"Folder {collection_path} does not exist.")
             return
-        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, task_line,
+        document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments,
                                   md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch)
     elif role:
         role_path = os.path.abspath(role)
