@@ -17,7 +17,7 @@ timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 
 def get_version():
-    return "0.7.20"
+    return "0.7.21"
 
 
 def manage_docsible_file_keys(docsible_path):
@@ -108,7 +108,7 @@ def render_readme_template(collection_metadata, md_collection_template, roles_in
     print(f"Collection README.md written at: {output_path}")
 
 
-def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch):
+def document_collection_roles(collection_path, playbook, graph, no_backup, no_docsible, comments, task_line, md_collection_template, md_role_template, append, output, repository_url, repo_type, repo_branch):
     """
     Document all roles in a collection, extracting metadata from galaxy.yml or galaxy.yaml.
     """
@@ -162,7 +162,7 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
                                 print(f'{role} not found:', role_playbook_path)
                             except Exception as e:
                                 print(f'{playbook} import for {role} error:', e)
-                        role_info = document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, md_role_template,
+                        role_info = document_role(role_path, playbook_content, graph, no_backup, no_docsible, comments, task_line, md_role_template,
                                                   belongs_to_collection=collection_metadata, append=append, output=output, repository_url=repository_url, repo_type=repo_type, repo_branch=repo_branch)
                         roles_info.append(role_info)
 
