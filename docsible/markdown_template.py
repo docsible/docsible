@@ -135,17 +135,11 @@ Description: Not available.
 {%-     if section is mapping %}
 | {{key}}.**{{ section_name }}** | dict | `{}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
 {{-       render_dict(key + "." + section_name, section, choices=choices,required=required,title=title) }}
-{%-       for k, value in section.items() %}
-{%-         if value is mapping and value is not string %}
-{{-           render_dict(key + "." + k , value, choices=choices,required=required,title=title) }}
-{%-         elif value is iterable and (value is not string and value is not mapping) %}
-{{-           render_list(key + "." + section_name, value, choices=choices,required=required,title=title) }}
-{%-         else %}
-| {{key}}.{{ section_name }}.**{{ k }}** | {% if value is sameas true or value is sameas false %}bool{% elif value is string %}str{% else %}int{% endif %} | `{{ value }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
-{%-         endif %}
-{%-       endfor %}
+{%-     elif section is iterable and (section is not string and section is not mapping) %}
+| {{key}}.**{{ section_name }}** | list | `[]` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
+{{-       render_list(key + "." + section_name, section, choices=choices,required=required,title=title) }}
 {%-     else %}
-| {{key}}.**{{ section_name }}** | {% if section is sameas true or section is sameas false %}bool{% elif section is string %}str{% else %}int{% endif %} | `{{ section }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
+| {{key}}.**{{ section_name }}** | {% if section is sameas true or section is sameas false %}bool{% elif section is string %}str{% else %}int{% endif %} | `{{ section | replace('|', '¦') }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
 {%-     endif %}
 {%-   endfor %}
 {%- endmacro %}
@@ -157,7 +151,7 @@ Description: Not available.
 {%-   elif item is iterable and (item is not string and item is not mapping) %}
 {{-     render_list(key, item, choices=choices,required=required,title=title) }}
 {%-   else %}
-| {{key}}.**{{ loop.index0 }}** | {% if item is sameas true or item is sameas false %}bool{% elif item is string %}str{% else %}int{% endif %} | `{{ item }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
+| {{key}}.**{{ loop.index0 }}** | {% if item is sameas true or item is sameas false %}bool{% elif item is string %}str{% else %}int{% endif %} | `{{ item | replace('|', '¦') }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
 {%-   endif %}
 {%- endfor %}
 {%- endmacro %}
