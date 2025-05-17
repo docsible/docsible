@@ -130,32 +130,6 @@ Description: Not available.
   {%- endif %}
 {%- endmacro %}
 
-{%- macro render_dict(key,value,choices,required=false,title=false) -%}
-{%-   for section_name, section in value.items() %}
-{%-     if section is mapping %}
-| {{key}}.**{{ section_name }}** | dict | `{}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
-{{-       render_dict(key + "." + section_name, section, choices=choices,required=required,title=title) }}
-{%-     elif section is iterable and (section is not string and section is not mapping) %}
-| {{key}}.**{{ section_name }}** | list | `[]` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
-{{-       render_list(key + "." + section_name, section, choices=choices,required=required,title=title) }}
-{%-     else %}
-| {{key}}.**{{ section_name }}** | {% if section is sameas true or section is sameas false %}bool{% elif section is string %}str{% else %}int{% endif %} | `{{ section | replace('|', '¦') }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
-{%-     endif %}
-{%-   endfor %}
-{%- endmacro %}
-
-{%- macro render_list(key,value,choices,required=false,title=false) -%}
-{%- for item in value %}
-{%-   if item is mapping %}
-{{-     render_dict(key ~ "." ~  loop.index0, item, choices=choices,required=required,title=title) }}
-{%-   elif item is iterable and (item is not string and item is not mapping) %}
-{{-     render_list(key, item, choices=choices,required=required,title=title) }}
-{%-   else %}
-| {{key}}.**{{ loop.index0 }}** | {% if item is sameas true or item is sameas false %}bool{% elif item is string %}str{% else %}int{% endif %} | `{{ item | replace('|', '¦') }}` | {% if choices[0] %}{{ choices[1] | replace('|', '¦') }}|{% endif %}{% if required[0] %}{{ required[1] }}|{% endif %}{% if title[0] %}{{ title[1] }}|{% endif %}
-{%-   endif %}
-{%- endfor %}
-{%- endmacro %}
-
 {% if role.defaults|length > 0 -%}
 ### Defaults
 
@@ -174,12 +148,8 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-----------|{% endif %}{% if ns.details_required %}------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-{%- if var_type == "dict" %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | `{}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
-{{- render_dict(key,details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
-{%- elif var_type == "list" %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | `[]` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
-{{- render_list(key, details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
+{%- if '.' in key %}
+| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- else %}
 | [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endif %}
@@ -195,12 +165,14 @@ Description: Not available.
 <details>
 <summary><b>🖇️ Full descriptions for vars in defaults/{{ defaultfile.file }}</b></summary>
 <br>
+<table>
+<th>Var</th><th>Description</th>
 {%- for key, details in defaultfile.data.items() %}
     {%- if details.description != None %}
-<b>{{ key }}:</b> {{ details.description }}
-<br>
+<tr><td><b>{{ key }}</b></td><td>{{details.description }}</td></tr>
     {%- endif %}
 {%- endfor %}
+</table>
 <br>
 </details>
 {%- endif %}
@@ -226,12 +198,8 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-----------|{% endif %}{% if ns.details_required %}------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-{%- if var_type == "dict" %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | `{}` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
-{{- render_dict(key,details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
-{%- elif var_type == "list" %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | `[]` | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
-{{- render_list(key, details.value,choices=(ns.details_choices,details.choices),required=(ns.details_required,details.required),title=(ns.details_title,details.title)) }}
+{%- if '.' in key %}
+| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- else %}
 | [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endif %}
@@ -247,12 +215,14 @@ Description: Not available.
 <details>
 <summary><b>🖇️ Full Descriptions for vars in vars/{{ varsfile.file }}</b></summary>
 <br>
+<table>
+<th>Var</th><th>Description</th>
 {%- for key, details in varsfile.data.items() %}
     {%- if details.description != None %}
-<b>{{ key }}:</b> {{ details.description }}
-<br>
+<tr><td><b>{{ key }}</b></td><td>{{details.description }}</td></tr>
     {%- endif %}
 {%- endfor %}
+</table>
 <br>
 </details>
 {%- endif %}
