@@ -27,7 +27,7 @@ def load_yaml_generic(filepath):
 def get_multiline_indicator(line):
     """
     Detect and map YAML multiline scalar indicators to a descriptive name.
-    Handles all combinations of |, >, +, -, and 1–9 indent levels.
+    Handles all combinations of |, >, +, -, and 1-9 indent levels.
     Returns: e.g., 'literal', 'folded_keep_indent_2', or 'invalid_...'
     """
     match = re.match(r'^\s*\w[\w\-\.]*\s*:\s*([>|][^\s#]*)', line)
