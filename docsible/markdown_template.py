@@ -145,10 +145,14 @@ Description: Not available.
     {%- if details.choices != None -%}{%- set ns.details_choices = true -%}{%- endif -%}
 {%- endfor -%}
 | Var          | Type         | Value       |{% if ns.details_choices %}Choices    |{% endif %}{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
-|--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
+|--------------|--------------|-------------|{% if ns.details_choices %}-----------|{% endif %}{% if ns.details_required %}------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- if '.' in key %}
+| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- else %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -161,12 +165,14 @@ Description: Not available.
 <details>
 <summary><b>🖇️ Full descriptions for vars in defaults/{{ defaultfile.file }}</b></summary>
 <br>
+<table>
+<th>Var</th><th>Description</th>
 {%- for key, details in defaultfile.data.items() %}
     {%- if details.description != None %}
-<b>{{ key }}:</b> {{ details.description }}
-<br>
+<tr><td><b>{{ key }}</b></td><td>{{details.description }}</td></tr>
     {%- endif %}
 {%- endfor %}
+</table>
 <br>
 </details>
 {%- endif %}
@@ -189,10 +195,14 @@ Description: Not available.
     {%- if details.choices != None -%}{%- set ns.details_choices = true -%}{%- endif -%}
 {%- endfor -%}
 | Var          | Type         | Value       |{% if ns.details_choices %}Choices    |{% endif %}{% if ns.details_required %}Required    |{% endif %}{% if ns.details_title %} Title       |{% endif %}
-|--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
+|--------------|--------------|-------------|{% if ns.details_choices %}-----------|{% endif %}{% if ns.details_required %}------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- if '.' in key %}
+| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- else %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -205,12 +215,14 @@ Description: Not available.
 <details>
 <summary><b>🖇️ Full Descriptions for vars in vars/{{ varsfile.file }}</b></summary>
 <br>
+<table>
+<th>Var</th><th>Description</th>
 {%- for key, details in varsfile.data.items() %}
     {%- if details.description != None %}
-<b>{{ key }}:</b> {{ details.description }}
-<br>
+<tr><td><b>{{ key }}</b></td><td>{{details.description }}</td></tr>
     {%- endif %}
 {%- endfor %}
+</table>
 <br>
 </details>
 {%- endif %}
@@ -223,9 +235,15 @@ Description: Not available.
 
 {% for taskfile in role.tasks|sort(attribute='file') %}
 #### File: tasks/{{ taskfile.file }}
-{% set ns = namespace (comments_required = false) %}{% for comment in taskfile['comments'] %}{% if comment != "" %}{% set ns.comments_required = true %}{% endif %}{% endfor %}
-| Name | Module | Has Conditions |{% if ns.comments_required %} Comments |{% endif %}
-| ---- | ------ | --------- |{% if ns.comments_required %}  -------- |{% endif %}
+{% set ns = namespace (tags_required = false, comments_required = false) %}
+{%- for t in taskfile['mermaid'] %}
+  {%- if 'tags' in t and t['tags'] != "" %}{% set ns.tags_required = true %}{% endif %}
+{%- endfor %}
+{%- for comment in taskfile['comments'] %}
+  {%- if comment != "" %}{% set ns.comments_required = true %}{% endif %}
+{%- endfor %}
+| Name | Module | Has Conditions |{% if ns.tags_required %} Tags |{% endif %}{% if ns.comments_required %} Comments |{% endif %}
+| ---- | ------ | -------------- |{% if ns.tags_required %} -----|{% endif %}{% if ns.comments_required %} -------- |{% endif %}
 {%- for task in taskfile.tasks %}
 {%- if taskfile['lines'] | length > 0 %}
 | [{{ task.name.replace("|", "¦") }}]({{ render_repo_link(role.repository, role.name, 'tasks/' ~ taskfile.file, taskfile['lines'][task.name], role.repository_type, role.repository_branch) }}) | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {{ taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first | join(',') }} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
