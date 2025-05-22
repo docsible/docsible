@@ -24,6 +24,47 @@ def load_yaml_generic(filepath):
         return None
 
 
+def get_multiline_indicator(line):
+    """
+    Detect and map YAML multiline scalar indicators to a descriptive name.
+    Handles all combinations of |, >, +, -, and 1–9 indent levels.
+    Returns: e.g., 'literal', 'folded_keep_indent_2', or 'invalid_...'
+    """
+    match = re.match(r'^\s*\w[\w\-\.]*\s*:\s*([>|][^\s#]*)', line)
+    if not match:
+        return None
+
+    raw = match.group(1)
+
+    # Invalid if multiple digits or unknown characters
+    if re.search(r'\d{2,}', raw) or re.search(r'[^>|0-9+-]', raw):
+        return f'invalid_{raw}'
+
+    style = 'literal' if raw.startswith('|') else 'folded'
+    chomping = None
+    indent = None
+
+    # Extract components
+    chomp_match = re.search(r'[+-]', raw)
+    indent_match = re.search(r'[1-9]', raw)
+
+    if chomp_match:
+        chomping = chomp_match.group(0)
+    if indent_match:
+        indent = indent_match.group(0)
+
+    # Build result
+    name = style
+    if chomping == '+':
+        name += '_keep'
+    elif chomping == '-':
+        name += '_strip'
+    if indent:
+        name += f'_indent_{indent}'
+
+    return name
+
+
 def load_yaml_file_custom(filepath):
     """
     Load a YAML file and extract both its data and associated metadata from comments, 
@@ -197,13 +238,14 @@ def load_yaml_file_custom(filepath):
             parent_line = current_line
 
             meta = extract_metadata(current_line)
-
+            indicator_name = get_multiline_indicator(lines[current_line])
             result[k] = {
-                'value': '<multiline value>' if is_multiline_value(lines[current_line]) 
-                         else [] if isinstance(v, list)
-                         else {} if isinstance(v, dict)
-                         else v.strip() if isinstance(v, str)
-                         else v,
+                'value': f"<multiline value: {indicator_name}>" if indicator_name
+                        else [] if isinstance(v, list)
+                        else {} if isinstance(v, dict)
+                        else v.strip() if isinstance(v, str)
+                        else v,
+                'multiline_indicator': indicator_name,
                 'title': meta['title'],
                 'required': meta['required'],
                 'choices': meta['choices'],
