@@ -257,20 +257,37 @@ def load_yaml_file_custom(filepath):
         print(f"Error loading {filepath}: {e}")
         return None
 
-
 def load_yaml_files_from_dir_custom(dir_path):
     """Function to load all YAML files from a given directory and include file names"""
     collected_data = []
-    if os.path.exists(dir_path) and os.path.isdir(dir_path):
-        for yaml_file in os.listdir(dir_path):
-            if yaml_file.endswith(".yml") or yaml_file.endswith(".yaml"):
-                file_data = load_yaml_file_custom(
-                    os.path.join(dir_path, yaml_file))
-                if file_data:
-                    collected_data.append(
-                        {'file': yaml_file, 'data': file_data})
-    return collected_data
 
+    def process_yaml_file(full_path, dir_path):
+        if full_path.endswith((".yml", ".yaml")):
+            file_data = load_yaml_file_custom(full_path)
+            if file_data:
+                relative_path = os.path.relpath(full_path, dir_path)
+                return ({'file': relative_path, 'data': file_data})
+        return None
+    
+    if os.path.exists(dir_path) and os.path.isdir(dir_path):
+        # dir-path
+        for file in os.listdir(dir_path):
+            full_path = os.path.join(dir_path, file)
+            if os.path.isfile(full_path):
+                item = process_yaml_file(full_path, dir_path)
+                if item:
+                    collected_data.append(item)
+        # main-dir
+        main_dir = os.path.join(dir_path, "main")
+        if os.path.exists(main_dir) and os.path.isdir(main_dir):
+            for root, _, files in os.walk(main_dir):
+                for yaml_file in files:
+                    full_path = os.path.join(root, yaml_file)
+                    item = process_yaml_file(full_path, dir_path)
+                    if item:
+                        collected_data.append(item)
+
+    return collected_data
 
 def get_task_comments(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
