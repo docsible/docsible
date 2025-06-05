@@ -25,6 +25,7 @@ Docsible is a command-line interface (CLI) written in Python that automates the 
 - Includes meta-data like author and license from `meta/main.[yml/yaml]`
 - Generates a well-structured table for default and role-specific variables
 - Support for encrypted Ansible Vault variables
+- Automatically converts markdown links (e.g., `[text](url)`) in variable descriptions (from `# description:` and `# description-lines:` comments in YAML files) to HTML `<a>` tags in the generated documentation.
 
 ## Installation
 

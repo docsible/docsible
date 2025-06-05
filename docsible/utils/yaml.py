@@ -134,6 +134,8 @@ def load_yaml_file_custom(filepath):
                     meta['choices'] = comment[8:].strip()
                 elif lc.startswith('description:'):
                     meta['description'] = comment[12:].strip()
+                    if meta['description']:
+                        meta['description'] = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', meta['description'])
                 elif lc.startswith('description-lines:'):
                     description_lines = []
                     start_collecting = False  # Flag to start collecting lines
@@ -154,8 +156,9 @@ def load_yaml_file_custom(filepath):
                         if start_collecting:
                             if line_content.startswith("#"):
                                 # Collect the line content
-                                description_lines.append(
-                                    f'{line_content[1:].strip()}<br>')
+                                line_to_add = line_content[1:].strip()
+                                line_to_add = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', line_to_add)
+                                description_lines.append(f'{line_to_add}<br>')
                             else:
                                 break  # Stop if a non-comment line is encountered
                     
