@@ -184,8 +184,15 @@ def generate_mermaid_playbook(playbook):
         hosts = play.get("hosts", "UndefinedHost")
         tasks = play.get("tasks", [])
         roles = play.get("roles", [])
-        hosts = re.sub(r"{{\s*(\w+)\s*}}", r"\1", hosts)
-        sanitized_hosts = sanitize_for_mermaid_id(hosts)
+        if not isinstance(hosts, list):
+            hosts = [hosts]
+        sanitized_hosts = []
+        for host in hosts:
+            host = re.sub(r"{{\s*(\w+)\s*}}", r"\1", host)
+            host = sanitize_for_mermaid_id(host)
+            sanitized_hosts.append(host)
+        sanitized_hosts = ", ".join(sanitized_hosts)
+        sanitized_hosts = "hosts[" + sanitized_hosts + "]"
         last_node = sanitized_hosts
         if roles:
             for i, role in enumerate(roles):
