@@ -256,7 +256,7 @@ Description: Not available.
 {% if mermaid_code_per_file -%}
 ## Task Flow Graphs
 
-{% for task_file, mermaid_code in mermaid_code_per_file.items() %}
+{% for task_file, mermaid_code in mermaid_code_per_file | dictsort %}
 
 ### Graph for {{ task_file }}
 
