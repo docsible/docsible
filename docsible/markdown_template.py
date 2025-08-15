@@ -70,7 +70,14 @@ Description: Not available.
   {{ indent }}  - **Required**: {{ details.required | default('false') }}
   {{ indent }}  - **Type**: {{ details.type }}
   {{ indent }}  - **Default**: {{ details.default | default('none') }}
+  {% if details.description is iterable and (details.description is not string and details.description is not mapping) -%}
+  {{ indent }}  - **Description**: 
+  {% for details_desc in details.description %}
+      {{ indent }} - {{ details_desc }}
+  {% endfor %}
+  {% else %}
   {{ indent }}  - **Description**: {{ details.description | default('No description provided') }}
+  {% endif %}
   {% if details.choices is defined %}
     {{ indent }}  - **Choices**:
     {% for choice in details.choices %}
@@ -100,8 +107,19 @@ Description: Not available.
 <summary><b>🧩 Argument Specifications in meta/argument_specs</b></summary>
 {% for section, specs in role.argument_specs.argument_specs.items() %}
 #### Key: {{ section }}
+{% if specs.description is iterable and (specs.description is not string and specs.description is not mapping) %}
+**Description**: 
+{% for desc in specs.description %}
+  - {{ desc }}
+{% endfor %}
+{% else %}
 **Description**: {{ specs.description or specs.short_description or 'No description provided' }}
+{% endif %}
+
+{% if specs.options is defined %}
+**Options**:
 {{ render_arguments_list(specs.options) }}
+{% endif %}
 {% endfor %}
 </details>
 {% else %}
@@ -415,7 +433,14 @@ Description: Not available.
   {{ indent }}  - **Required**: {{ details.required | default('false') }}
   {{ indent }}  - **Type**: {{ details.type }}
   {{ indent }}  - **Default**: {{ details.default | default('none') }}
+  {% if details.description is iterable and (details.description is not string and details.description is not mapping) -%}
+  {{ indent }}  - **Description**: 
+  {% for details_desc in details.description %}
+      {{ indent }} - {{ details_desc }}
+  {% endfor %}
+  {% else %}
   {{ indent }}  - **Description**: {{ details.description | default('No description provided') }}
+  {% endif %}
   {% if details.choices is defined %}
     {{ indent }}  - **Choices**:
     {% for choice in details.choices %}
