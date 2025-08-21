@@ -14,9 +14,14 @@ Repository - {{ role.belongs_to_collection.repository }}
 {%- endif %}
 
 {% if role.meta and role.meta.galaxy_info -%}
+{%- if role.meta.galaxy_info.description and (role.meta.galaxy_info.description is not string and role.meta.galaxy_info.description is not mapping) -%}
+Description:
+{% for role_desc in role.meta.galaxy_info.description -%}
+  - {{ role_desc }}
+{% endfor -%}
+{%- else -%}
 Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
-{% else %}
-Description: Not available.
+{%- endif %}
 {%- endif %}
 
 {% if role.docsible -%}
@@ -72,12 +77,12 @@ Description: Not available.
   {{ indent }}  - **Default**: {{ details.default | default('none') }}
   {% if details.description is iterable and (details.description is not string and details.description is not mapping) -%}
   {{ indent }}  - **Description**: 
-  {% for details_desc in details.description %}
+  {% for details_desc in details.description -%}
       {{ indent }} - {{ details_desc }}
-  {% endfor %}
+  {% endfor -%}
   {% else %}
   {{ indent }}  - **Description**: {{ details.description | default('No description provided') }}
-  {% endif %}
+  {%- endif %}
   {% if details.choices is defined %}
     {{ indent }}  - **Choices**:
     {% for choice in details.choices %}
@@ -109,17 +114,17 @@ Description: Not available.
 #### Key: {{ section }}
 {% if specs.description is iterable and (specs.description is not string and specs.description is not mapping) %}
 **Description**: 
-{% for desc in specs.description %}
+{% for desc in specs.description -%}
   - {{ desc }}
-{% endfor %}
+{% endfor -%}
 {% else %}
 **Description**: {{ specs.description or specs.short_description or 'No description provided' }}
-{% endif %}
+{%- endif %}
 
-{% if specs.options is defined %}
+{% if specs.options is defined -%}
 **Options**:
 {{ render_arguments_list(specs.options) }}
-{% endif %}
+{%- endif %}
 {% endfor %}
 </details>
 {% else %}
@@ -435,7 +440,7 @@ Description: Not available.
   {{ indent }}  - **Default**: {{ details.default | default('none') }}
   {% if details.description is iterable and (details.description is not string and details.description is not mapping) -%}
   {{ indent }}  - **Description**: 
-  {% for details_desc in details.description %}
+  {% for details_desc in details.description -%}
       {{ indent }} - {{ details_desc }}
   {% endfor %}
   {% else %}
