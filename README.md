@@ -130,26 +130,26 @@ Docsible works with Python 3.x and requires the following libraries:
 
 ## About comments
 
-This tool work whith several type of comments.
+This tool works with several types of comments.
 
 ### On variables and defaults
 The tool read comments placed before a variable, only if it begin with specific tag:
 
-`# title:` This tag will be used for popiulate the column **Title** of the README.md. It is a short description of the variable
+`# title:` This tag will be used to populate the column **Title** of `README.md`. It is a short description of the variable
 
-`# required:` This tag will be used for popiulate the column **Required** of the README.md
+`# required:` This tag will be used to populate the column **Required** of `README.md`.
 
-`# choices:` This optional tag will be used for popiulate the column **Choices** of the README.md
+`# choices:` This optional tag will be used to populate the column **Choices** of the `README.md`.
 
 ### On tasks
 
-The tool will read all the line before each `- name:` of the tasks that begin with `#`.
-All comment will be reported to the column **Comments** of the tasks tables.
+The tool will read all the lines before each `- name:` of the tasks that begin with `#`.
+All comments will be reported to the column **Comments** of the tasks tables.
 
 ## Contributing
 
 For details on how to contribute, please read the [Contributing Guidelines](CONTRIBUTING.md).
-Merge requests that do not follow the guidelines may be closed or require changes before being accepted.
+Pull requests that do not follow the guidelines may be closed or require changes before being accepted.
 
 ## License
 
