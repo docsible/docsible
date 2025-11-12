@@ -11,3 +11,6 @@ test4:
   - 1
   - true
   - "3"
+
+test5:
+  example: 1

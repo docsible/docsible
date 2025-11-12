@@ -15,3 +15,6 @@ def test_type_detection():
     assert result['test4.0']['type'] == "int"
     assert result['test4.1']['type'] == "bool"
     assert result['test4.2']['type'] == "str"
+    # This is not overriden in the fixture, so it should be dict
+    assert result['test5']['type'] == "dict"
+    assert result['test5.example']['type'] == "int"
