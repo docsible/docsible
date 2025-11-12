@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='docsible',
-    version='0.7.25',
+    version='0.8.0',
     packages=find_packages(),
     include_package_data=True,
     author='Lucian BLETAN',
@@ -22,7 +22,7 @@ setup(
         [console_scripts]
         docsible=docsible.cli:doc_the_role
     ''',
-    
+
     classifiers=[
         # As from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         # 'Development Status :: 1 - Planning',
