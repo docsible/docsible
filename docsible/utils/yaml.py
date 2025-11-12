@@ -67,11 +67,11 @@ def get_multiline_indicator(line):
 
 def load_yaml_file_custom(filepath):
     """
-    Load a YAML file and extract both its data and associated metadata from comments, 
+    Load a YAML file and extract both its data and associated metadata from comments,
     while also tracking the line number for each key and nested item.
-    The function parses the YAML file, collects metadata (title, required, choices, description) 
-    from preceding comments for each key, and tracks the line number where each key appears. 
-    It supports nested dictionaries and lists, and can handle multi-line values and 
+    The function parses the YAML file, collects metadata (title, required, choices, description)
+    from preceding comments for each key, and tracks the line number where each key appears.
+    It supports nested dictionaries and lists, and can handle multi-line values and
     extended descriptions via special comment blocks.
     Args:
         filepath (str): Path to the YAML file.
@@ -122,7 +122,7 @@ def load_yaml_file_custom(filepath):
                     break
             comments.reverse()
 
-            meta = {'title': None, 'required': None, 'choices': None, 'description': None}
+            meta = {'title': None, 'required': None, 'choices': None, 'description': None, 'type': None}
 
             for comment in comments:
                 lc = comment.lower()
@@ -134,6 +134,8 @@ def load_yaml_file_custom(filepath):
                     meta['choices'] = comment[8:].strip()
                 elif lc.startswith('description:'):
                     meta['description'] = comment[12:].strip()
+                elif lc.startswith('type:'):
+                    meta['type'] = comment[5:].strip()
                 elif lc.startswith('description-lines:'):
                     description_lines = []
                     start_collecting = False  # Flag to start collecting lines
@@ -150,7 +152,7 @@ def load_yaml_file_custom(filepath):
                         # Stop collecting when encountering `# end`
                         if line_content.startswith("# end"):
                             break
-                        
+
                         if start_collecting:
                             if line_content.startswith("#"):
                                 # Collect the line content
@@ -158,7 +160,7 @@ def load_yaml_file_custom(filepath):
                                     f'{line_content[1:].strip()}<br>')
                             else:
                                 break  # Stop if a non-comment line is encountered
-                    
+
                     # Join all collected lines into a single description string
                     if description_lines:
                         meta['description'] = "\n".join(
@@ -167,7 +169,7 @@ def load_yaml_file_custom(filepath):
 
         def process_line(k, v):
             """
-            Process a single key-value pair, determine its line number, extract metadata, 
+            Process a single key-value pair, determine its line number, extract metadata,
             and store the result in the output dictionary.
             Args:
                 k (str): The full key path (dot-separated for nested keys).
@@ -251,9 +253,10 @@ def load_yaml_file_custom(filepath):
                 'choices': meta['choices'],
                 'description': meta['description'],
                 'line': current_line + 1,
-                'type': 'dict' if isinstance(v, dict)
-                        else 'list' if isinstance(v, list)
-                        else type(v).__name__
+                'type': meta['type'] if meta['type']
+                    else 'dict' if isinstance(v, dict)
+                    else 'list' if isinstance(v, list)
+                    else type(v).__name__
             }
 
         def process_dict(base_key, value):
