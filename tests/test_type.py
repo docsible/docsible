@@ -1,7 +1,7 @@
 import pytest
 from docsible.utils.yaml import load_yaml_file_custom
 
-def test_type_line():
+def test_type_detection():
     result = load_yaml_file_custom("fixtures/type_fixture.yml")
     # Type is overriden in the fixture to str
     assert result['test']['type'] == "str"
