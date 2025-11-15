@@ -1,0 +1,16 @@
+---
+# type: str
+test: 1
+
+# type: int
+test2: ""
+
+test3: 2
+
+test4:
+  - 1
+  - true
+  - "3"
+
+test5:
+  example: 1
