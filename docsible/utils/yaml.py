@@ -243,8 +243,7 @@ def load_yaml_file_custom(filepath):
             indicator_name = get_multiline_indicator(lines[current_line])
             result[k] = {
                 'value': f"<multiline value: {indicator_name}>" if indicator_name
-                        else [] if isinstance(v, list)
-                        else {} if isinstance(v, dict)
+                        else v if isinstance(v, (list, dict))
                         else v.strip() if isinstance(v, str)
                         else v,
                 'multiline_indicator': indicator_name,

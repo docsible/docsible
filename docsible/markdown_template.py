@@ -15,12 +15,11 @@ Repository - {{ role.belongs_to_collection.repository }}
 
 {% if role.meta and role.meta.galaxy_info -%}
 {%- if role.meta.galaxy_info.description and (role.meta.galaxy_info.description is not string and role.meta.galaxy_info.description is not mapping) -%}
-Description:
 {% for role_desc in role.meta.galaxy_info.description -%}
   - {{ role_desc }}
 {% endfor -%}
 {%- else -%}
-Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
+{{ role.meta.galaxy_info.description or 'Not available.' }}
 {%- endif %}
 {%- endif %}
 
@@ -131,7 +130,7 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {% endif %}
 
 {% macro render_repo_link(repo, role_name, file_path, line, repo_type, branch) -%}
-  {%- if repo and file_path and line is not none -%}
+  {%- if repo and file_path -%}
     {%- if role.belongs_to_collection -%}
       {%- set full_path = 'roles/' ~ role_name ~ '/' ~ file_path -%}
     {%- else -%}
@@ -140,16 +139,16 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
     {%- set encoded_path = full_path | replace(' ', '%20') -%}
 
     {%- if repo_type == 'github' -%}
-      {{ repo }}/blob/{{ branch }}/{{ encoded_path }}#L{{ line }}
+      {{ repo }}/blob/{{ branch }}/{{ encoded_path }}{% if line is not none %}#L{{ line }}{% endif %}
     {%- elif repo_type == 'gitlab' -%}
-      {{ repo }}/-/blob/{{ branch }}/{{ encoded_path }}#L{{ line }}
+      {{ repo }}/-/blob/{{ branch }}/{{ encoded_path }}{% if line is not none %}#L{{ line }}{% endif %}
     {%- elif repo_type == 'gitea' -%}
-      {{ repo }}/src/branch/{{ branch }}/{{ encoded_path }}#L{{ line }}
+      {{ repo }}/src/branch/{{ branch }}/{{ encoded_path }}{% if line is not none %}#L{{ line }}{% endif %}
     {%- else -%}
-      {{ repo }}/{{ encoded_path }}#L{{ line }}
+      {{ repo }}/{{ encoded_path }}{% if line is not none %}#L{{ line }}{% endif %}
     {%- endif %}
   {%- else -%}
-    {{ file_path }}#L{{ line }}
+    {{ file_path }}{% if line is not none %}#L{{ line }}{% endif %}
   {%- endif %}
 {%- endmacro %}
 
@@ -171,10 +170,28 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 |--------------|--------------|-------------|{% if ns.details_choices %}-----------|{% endif %}{% if ns.details_required %}------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-{%- if '.' in key %}
-| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- set value_display = '' %}
+{%- if details.value is string and details.value | length == 0 %}
+  {%- set value_display = '' %}
+{%- elif details.value is mapping %}
+  {%- set value_display = '<pre>' %}
+  {%- for k, v in details.value.items() %}
+    {%- set value_display = value_display ~ k ~ ': ' ~ (v | tojson if v is not string else v) ~ '<br>' %}
+  {%- endfor %}
+  {%- set value_display = value_display ~ '</pre>' %}
+{%- elif details.value is sequence and details.value is not string %}
+  {%- set value_display = '<pre>' %}
+  {%- for item in details.value %}
+    {%- set value_display = value_display ~ (item | tojson if item is not string else item) ~ '<br>' %}
+  {%- endfor %}
+  {%- set value_display = value_display ~ '</pre>' %}
 {%- else %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+  {%- set value_display = '`' ~ details.value | replace('|', '¦') ~ '`' %}
+{%- endif %}
+{%- if '.' in key %}
+| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {{ value_display }} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- else %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {{ value_display }} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endif %}
 {%- endfor %}
 {%- endfor %}
@@ -221,10 +238,28 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 |--------------|--------------|-------------|{% if ns.details_choices %}-----------|{% endif %}{% if ns.details_required %}------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-{%- if '.' in key %}
-| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- set value_display = '' %}
+{%- if details.value is string and details.value | length == 0 %}
+  {%- set value_display = '' %}
+{%- elif details.value is mapping %}
+  {%- set value_display = '<pre>' %}
+  {%- for k, v in details.value.items() %}
+    {%- set value_display = value_display ~ k ~ ': ' ~ (v | tojson if v is not string else v) ~ '<br>' %}
+  {%- endfor %}
+  {%- set value_display = value_display ~ '</pre>' %}
+{%- elif details.value is sequence and details.value is not string %}
+  {%- set value_display = '<pre>' %}
+  {%- for item in details.value %}
+    {%- set value_display = value_display ~ (item | tojson if item is not string else item) ~ '<br>' %}
+  {%- endfor %}
+  {%- set value_display = value_display ~ '</pre>' %}
 {%- else %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+  {%- set value_display = '`' ~ details.value | replace('|', '¦') ~ '`' %}
+{%- endif %}
+{%- if '.' in key %}
+| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {{ value_display }} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- else %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {{ value_display }} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endif %}
 {%- endfor %}
 {%- endfor %}
@@ -269,9 +304,9 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 | ---- | ------ | -------------- |{% if ns.tags_required %} -----|{% endif %}{% if ns.comments_required %} -------- |{% endif %}
 {%- for task in taskfile.tasks %}
 {%- if taskfile['lines'] | length > 0 %}
-| [{{ task.name.replace("|", "¦") }}]({{ render_repo_link(role.repository, role.name, 'tasks/' ~ taskfile.file, taskfile['lines'][task.name], role.repository_type, role.repository_branch) }}) | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {{ taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first | join(',') }} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
+| [{{ task.name.replace("|", "¦") }}]({{ render_repo_link(role.repository, role.name, 'tasks/' ~ taskfile.file, taskfile['lines'][task.name], role.repository_type, role.repository_branch) }}) | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {% set task_tags = taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first %}{% if task_tags is string %}{{ task_tags }}{% elif task_tags is defined and task_tags is iterable %}{{ task_tags | join(',') }}{% else %}{% endif %} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
 {%- else %}
-| {{ task.name.replace("|", "¦") }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {{ taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first | join(',') }} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
+| {{ task.name.replace("|", "¦") }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {% set task_tags = taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first %}{% if task_tags is string %}{{ task_tags }}{% elif task_tags is defined and task_tags is iterable %}{{ task_tags | join(',') }}{% else %}{% endif %} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
 {%- endif %}
 {%- endfor %}
 {% endfor %}
@@ -411,7 +446,7 @@ collection_template = """
 Description: Not available.
 {%- endif %}
 {% macro render_repo_link(repo, role_name, file_path, line, repo_type, branch) -%}
-  {%- if repo and file_path and line is not none -%}
+  {%- if repo and file_path -%}
     {%- if role.belongs_to_collection -%}
       {%- set full_path = 'roles/' ~ role_name ~ '/' ~ file_path -%}
     {%- else -%}
@@ -419,16 +454,16 @@ Description: Not available.
     {%- endif %}
     {%- set encoded_path = full_path | replace(' ', '%20') -%}
     {%- if repo_type == 'github' -%}
-      {{ repo }}/blob/{{ branch }}/{{ encoded_path }}#L{{ line }}
+      {{ repo }}/blob/{{ branch }}/{{ encoded_path }}{% if line is not none %}#L{{ line }}{% endif %}
     {%- elif repo_type == 'gitlab' -%}
-      {{ repo }}/-/blob/{{ branch }}/{{ encoded_path }}#L{{ line }}
+      {{ repo }}/-/blob/{{ branch }}/{{ encoded_path }}{% if line is not none %}#L{{ line }}{% endif %}
     {%- elif repo_type == 'gitea' -%}
-      {{ repo }}/src/branch/{{ branch }}/{{ encoded_path }}#L{{ line }}
+      {{ repo }}/src/branch/{{ branch }}/{{ encoded_path }}{% if line is not none %}#L{{ line }}{% endif %}
     {%- else -%}
-      {{ repo }}/{{ encoded_path }}#L{{ line }}
+      {{ repo }}/{{ encoded_path }}{% if line is not none %}#L{{ line }}{% endif %}
     {%- endif %}
   {%- else -%}
-    {{ file_path }}#L{{ line }}
+    {{ file_path }}{% if line is not none %}#L{{ line }}{% endif %}
   {%- endif %}
 {%- endmacro %}
 {% macro render_arguments_list(arguments, level=0) %}
@@ -499,7 +534,25 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- set value_display = '' %}
+{%- if details.value is string and details.value | length == 0 %}
+  {%- set value_display = '' %}
+{%- elif details.value is mapping %}
+  {%- set value_display = '<pre>' %}
+  {%- for k, v in details.value.items() %}
+    {%- set value_display = value_display ~ k ~ ': ' ~ (v | tojson if v is not string else v) ~ '<br>' %}
+  {%- endfor %}
+  {%- set value_display = value_display ~ '</pre>' %}
+{%- elif details.value is sequence and details.value is not string %}
+  {%- set value_display = '<pre>' %}
+  {%- for item in details.value %}
+    {%- set value_display = value_display ~ (item | tojson if item is not string else item) ~ '<br>' %}
+  {%- endfor %}
+  {%- set value_display = value_display ~ '</pre>' %}
+{%- else %}
+  {%- set value_display = '`' ~ details.value | replace('|', '¦') ~ '`' %}
+{%- endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {{ value_display }} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -543,7 +596,25 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+{%- set value_display = '' %}
+{%- if details.value is string and details.value | length == 0 %}
+  {%- set value_display = '' %}
+{%- elif details.value is mapping %}
+  {%- set value_display = '<pre>' %}
+  {%- for k, v in details.value.items() %}
+    {%- set value_display = value_display ~ k ~ ': ' ~ (v | tojson if v is not string else v) ~ '<br>' %}
+  {%- endfor %}
+  {%- set value_display = value_display ~ '</pre>' %}
+{%- elif details.value is sequence and details.value is not string %}
+  {%- set value_display = '<pre>' %}
+  {%- for item in details.value %}
+    {%- set value_display = value_display ~ (item | tojson if item is not string else item) ~ '<br>' %}
+  {%- endfor %}
+  {%- set value_display = value_display ~ '</pre>' %}
+{%- else %}
+  {%- set value_display = '`' ~ details.value | replace('|', '¦') ~ '`' %}
+{%- endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {{ value_display }} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 

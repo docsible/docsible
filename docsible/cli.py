@@ -27,7 +27,7 @@ def manage_docsible_file_keys(docsible_path):
         'users': None,
         'dt_dev': None,
         'dt_prod': None,
-        'dt_update': datetime.now().strftime('%Y/%m/%d'),
+        'dt_update': datetime.now().strftime('%Y-%m-%d'),
         'version': None,
         'time_saving': None,
         'category': None,
@@ -43,7 +43,7 @@ def manage_docsible_file_keys(docsible_path):
         updated_data = {**default_data, **existing_data}
         if updated_data != existing_data:
             # Update dt_update field if docsible keys added
-            existing_data['dt_update'] = datetime.now().strftime('%Y/%m/%d')
+            existing_data['dt_update'] = datetime.now().strftime('%Y-%m-%d')
             with open(docsible_path, 'w', encoding='utf-8') as f:
                 yaml.dump(updated_data, f, default_flow_style=False)
             print(f"Updated {docsible_path} with new keys.")
