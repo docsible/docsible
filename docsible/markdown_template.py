@@ -95,14 +95,8 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
       {{ indent }}    - {{ alias }}
     {% endfor %}
   {% endif %}
-  {% if details.type == 'dict' and details.options %}
+  {% if (details.type == 'dict' and details.options) or (details.type == 'list' and details.elements == 'dict' and details.options) %}
     {{ render_arguments_list(details.options, level + 1) }}
-  {% elif details.type == 'list' and details.elements == 'dict' %}
-    {% for elem in details.default %}
-      {% if elem is mapping %}
-        {{ render_arguments_list(elem, level + 1) }}
-      {% endif %}
-    {% endfor %}
   {% endif %}
 {% endfor %}
 {% endmacro %}
