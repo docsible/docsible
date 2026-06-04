@@ -1,0 +1,17 @@
+---
+argument_specs:
+  main:
+    options:
+      my_list:
+        type: list
+        elements: dict
+        default: []
+        description: "A list of dicts."
+        options:
+          name:
+            type: str
+            required: true
+            description: "Name of the item."
+          value:
+            type: int
+            description: "Value of the item."
