@@ -9,8 +9,37 @@ def vault_constructor(loader, node):
     return "ENCRYPTED_WITH_ANSIBLE_VAULT"
 
 
-# Register the custom constructor with the '!vault' tag.
+def unsafe_constructor(loader, node):
+    """
+    Handle !unsafe tag by preserving it in documentation output.
+
+    Uses smart quoting: chooses quote wrapper (single or double) that minimizes
+    or eliminates the need for backslash escaping, producing cleaner docs.
+
+    Examples:
+        'He said "hello"'  -> !unsafe 'He said "hello"'  (no escaping needed)
+        "It's working"     -> !unsafe "It's working"     (no escaping needed)
+        'Mix "both" types' -> !unsafe "Mix \"both\" types" (escaping required)
+    """
+    value = loader.construct_scalar(node)
+    has_double_quotes = '"' in value
+    has_single_quotes = "'" in value
+
+    if has_double_quotes and has_single_quotes:
+        # Both quote types present: use double quotes and escape embedded doubles
+        escaped = value.replace('"', r'\"')
+        return f'!unsafe "{escaped}"'
+    elif has_double_quotes:
+        # Only double quotes: wrap in single quotes to avoid escaping
+        return f"!unsafe '{value}'"
+    else:
+        # Only single quotes or neither: wrap in double quotes
+        return f'!unsafe "{value}"'
+
+
+# Register the custom constructors for known Ansible tags.
 yaml.SafeLoader.add_constructor('!vault', vault_constructor)
+yaml.SafeLoader.add_constructor('!unsafe', unsafe_constructor)
 
 
 def load_yaml_generic(filepath):
