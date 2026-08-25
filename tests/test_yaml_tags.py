@@ -1,14 +1,17 @@
 """Tests for Ansible YAML tag handling (!unsafe, !vault, and unknown tags)."""
 
+from pathlib import Path
+
 from docsible.utils.yaml import load_yaml_file_custom
 
 
-FIXTURE_PATH = "fixtures/unsafe_tag_fixture.yml"
+# Absolute path to fixture, works from both root and tests directory
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "unsafe_tag_fixture.yml"
 
 
 def load_test_fixture():
     """Load the test fixture file once for all tests."""
-    return load_yaml_file_custom(FIXTURE_PATH)
+    return load_yaml_file_custom(str(FIXTURE_PATH))
 
 
 def test_vault_tag_uses_placeholder():

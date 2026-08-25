@@ -1,8 +1,15 @@
+from pathlib import Path
+
 import pytest
 from docsible.utils.yaml import load_yaml_file_custom
 
+
+# Absolute path to fixture, works from both root and tests directory
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "type_fixture.yml"
+
+
 def test_type_detection():
-    result = load_yaml_file_custom("fixtures/type_fixture.yml")
+    result = load_yaml_file_custom(str(FIXTURE_PATH))
     # Type is overriden in the fixture to str
     assert result['test']['type'] == "str"
     # Type is overriden in the fixture to int
