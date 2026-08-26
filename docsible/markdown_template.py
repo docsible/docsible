@@ -28,13 +28,13 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 | Field                | Value           |
 |--------------------- |-----------------|
 {%- if role.docsible.description %}
-| Functional description | {{ role.docsible.description }} |
+| Functional description | {{ role.docsible.description | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |
 {%- endif %}
 {%- if role.docsible.requester %}
-| Requester            | {{ role.docsible.requester }} |
+| Requester            | {{ role.docsible.requester | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |
 {%- endif %}
 {%- if role.docsible.users %}
-| Users                | {{ role.docsible.users }} |
+| Users                | {{ role.docsible.users | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |
 {%- endif %}
 {%- if role.docsible.dt_dev %}
 | Date dev             | {{ role.docsible.dt_dev }} |
@@ -46,22 +46,22 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 | Readme update        | {{ role.docsible.dt_update }} |
 {%- endif %}
 {%- if role.docsible.version %}
-| Version              | {{ role.docsible.version }} |
+| Version              | {{ role.docsible.version | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |
 {%- endif %}
 {%- if role.docsible.time_saving %}
-| Time Saving          | {{ role.docsible.time_saving }} |
+| Time Saving          | {{ role.docsible.time_saving | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |
 {%- endif %}
 {%- if role.docsible.category %}
-| Category             | {{ role.docsible.category }} |
+| Category             | {{ role.docsible.category | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |
 {%- endif %}
 {%- if role.docsible.subCategory %}
-| Sub category         | {{ role.docsible.subCategory }} |
+| Sub category         | {{ role.docsible.subCategory | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |
 {%- endif %}
 {%- if role.docsible.aap_hub %}
 | AAP Hub              | {{ role.docsible.aap_hub }} |
 {%- endif %}
 {%- if role.docsible.automation_kind %}
-| Automation Kind      | {{ role.docsible.automation_kind }} |
+| Automation Kind      | {{ role.docsible.automation_kind | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |
 {%- endif %}
 {%- if role.docsible.critical %}
 | Critical ⚠️          | {{ role.docsible.critical }} |
@@ -166,9 +166,9 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
 {%- if '.' in key %}
-| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |{% endif %}
 {%- else %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |{% endif %}
 {%- endif %}
 {%- endfor %}
 {%- endfor %}
@@ -216,9 +216,9 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
 {%- if '.' in key %}
-| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key.rsplit('.', 1)[0] ~ '.**' ~ key.rsplit('.', 1)[1] ~ '**' }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |{% endif %}
 {%- else %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }} | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |{% endif %}
 {%- endif %}
 {%- endfor %}
 {%- endfor %}
@@ -263,9 +263,9 @@ Description: {{ role.meta.galaxy_info.description or 'Not available.' }}
 | ---- | ------ | -------------- |{% if ns.tags_required %} -----|{% endif %}{% if ns.comments_required %} -------- |{% endif %}
 {%- for task in taskfile.tasks %}
 {%- if taskfile['lines'] | length > 0 %}
-| [{{ task.name.replace("|", "¦") }}]({{ render_repo_link(role.repository, role.name, 'tasks/' ~ taskfile.file, taskfile['lines'][task.name], role.repository_type, role.repository_branch) }}) | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {{ taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first | join(',') }} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
+| [{{ task.name.replace("|", "¦").replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ') }}]({{ render_repo_link(role.repository, role.name, 'tasks/' ~ taskfile.file, taskfile['lines'][task.name], role.repository_type, role.repository_branch) }}) | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {{ taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first | join(',') }} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join | replace('\r\n', '<br>') | replace('\n', '<br>') | replace('\r', '<br>') | replace('|', '¦') }} |{% endif %}
 {%- else %}
-| {{ task.name.replace("|", "¦") }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {{ taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first | join(',') }} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join }} |{% endif %}
+| {{ task.name.replace("|", "¦").replace('\r\n', ' ').replace('\n', ' ').replace('\r', ' ') }} | {{ task.module }} | {{ 'True' if task.when else 'False' }} |{% if ns.tags_required %} {{ taskfile['mermaid'] | selectattr('name', 'equalto', task.name) | map(attribute='tags') | list | first | join(',') }} |{% endif %}{% if ns.comments_required %} {{ taskfile['comments'] | selectattr('task_name', 'equalto', task.name) | map(attribute='task_comments') | join | replace('\r\n', '<br>') | replace('\n', '<br>') | replace('\r', '<br>') | replace('|', '¦') }} |{% endif %}
 {%- endif %}
 {%- endfor %}
 {% endfor %}
@@ -493,7 +493,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in defaultfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'defaults/' ~ defaultfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
@@ -537,7 +537,7 @@ Description: Not available.
 |--------------|--------------|-------------|{% if ns.details_choices %}-------------|{% endif %}{% if ns.details_required %}-------------|{% endif %}{% if ns.details_title %}-------------|{% endif %}
 {%- for key, details in varsfile.data.items() %}
 {%- set var_type = details.value.__class__.__name__ %}
-| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('|', '¦') }} |{% endif %}
+| [{{ key }}]({{ render_repo_link(role.repository, role.name, 'vars/' ~ varsfile.file, details.line, role.repository_type, role.repository_branch) }})   | {{ var_type }}   | {% if details.value is string and details.value | length == 0 %}{% else %}`{{ details.value | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}`{% endif %} | {% if ns.details_choices %} {{ details.choices | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }}  |{% endif %}  {% if ns.details_required %} {{ details.required | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') }}  |{% endif %} {% if ns.details_title %} {{ details.title | replace('\r\n', ' ') | replace('\n', ' ') | replace('\r', ' ') | replace('|', '¦') }} |{% endif %}
 {%- endfor %}
 {%- endfor %}
 
