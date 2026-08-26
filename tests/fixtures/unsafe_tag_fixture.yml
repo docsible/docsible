@@ -1,0 +1,22 @@
+# !vault Ansible tag
+vault_encrypted: !vault |
+  encrypted_content
+
+# Basic !unsafe tag handling
+basic_unsafe: !unsafe '{{ not_a_template }}'
+complex_unsafe: !unsafe "{{ timestamp }} - [{{ log_level }}] {{ message }}"
+
+# Smart quoting: embedded double quotes (should use single quote wrapper)
+double_quotes: !unsafe 'He said "hello" to everyone'
+
+# Smart quoting: embedded single quotes (should use double quote wrapper)
+single_quotes: !unsafe "It's working perfectly"
+
+# Smart quoting: both quote types (must escape double quotes with backslash)
+mixed_quotes: !unsafe "She said \"it's fine\" confidently"
+
+# Special characters: backslashes (should preserve as-is)
+backslashes: !unsafe 'C:\path\to\file'
+
+# Simple case: no quotes
+simple_value: !unsafe somevalue
