@@ -1,15 +1,17 @@
 # Import libraries
-import os
-import yaml
 import click
-from shutil import copyfile
+import os
+import requests
+import yaml
 from datetime import datetime
-from jinja2 import Environment, BaseLoader, FileSystemLoader
 from docsible.markdown_template import static_template, collection_template
-from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
-from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments, get_task_line_numbers
-from docsible.utils.special_tasks_keys import process_special_task_keys
 from docsible.utils.git import get_repo_info
+from docsible.utils.mermaid import generate_mermaid_playbook, generate_mermaid_role_tasks_per_file
+from docsible.utils.special_tasks_keys import process_special_task_keys
+from docsible.utils.yaml import load_yaml_generic, load_yaml_files_from_dir_custom, get_task_comments, get_task_line_numbers
+from jinja2 import Environment, BaseLoader, FileSystemLoader
+from shutil import copyfile
+from urllib.parse import urlparse
 
 DOCSIBLE_START_TAG = "<!-- DOCSIBLE START -->"
 DOCSIBLE_END_TAG = "<!-- DOCSIBLE END -->"
@@ -18,6 +20,14 @@ timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
 def get_version():
     return "0.8.0"
+
+
+def is_url(url_string):
+    try:
+        result = urlparse(url_string)
+        return all([result.scheme, result.netloc])
+    except Exception:
+        return False
 
 
 def manage_docsible_file_keys(docsible_path):
@@ -75,13 +85,21 @@ def render_readme_template(collection_metadata, md_collection_template, roles_in
     """
     # Render the static template
     if md_collection_template:
-        template_dir = os.path.dirname(md_collection_template)
-        template_file = os.path.basename(md_collection_template)
-        env = Environment(loader=FileSystemLoader(template_dir))
-        template = env.get_template(template_file)
+        if is_url(md_collection_template):
+            resp = requests.get(md_collection_template, timeout=15)
+            resp.raise_for_status()
+            template_source = resp.text
+            env = Environment(loader=BaseLoader)
+            template = env.from_string(template_source)
+        else:
+            template_dir = os.path.dirname(md_collection_template)
+            template_file = os.path.basename(md_collection_template)
+            env = Environment(loader=FileSystemLoader(template_dir))
+            template = env.get_template(template_file)
     else:
         env = Environment(loader=BaseLoader)
         template = env.from_string(collection_template)
+
     data = {
         'collection': collection_metadata,
         'roles': roles_info
@@ -179,8 +197,8 @@ def document_collection_roles(collection_path, playbook, graph, no_backup, no_do
 @click.option('--no-docsible', '-nod', is_flag=True, help='Do not generate .docsible file and do not include it in README.md.')
 @click.option('--comments', '-com', is_flag=True, help='Read comments from tasks files')
 @click.option('--task-line', '-tl', is_flag=True, help='Read line numbers from tasks')
-@click.option('--md-collection-template', '-ctpl', default=None, help='Path to the collection markdown template file.')
-@click.option('--md-role-template', '-rtpl', '--md-template', '-tpl', default=None, help='Path to the role markdown template file.')
+@click.option('--md-collection-template', '-ctpl', default=None, help='Path or URL to the collection markdown template file.')
+@click.option('--md-role-template', '-rtpl', '--md-template', '-tpl', default=None, help='Path or URL to the role markdown template file.')
 @click.option('--append', '-a', is_flag=True, help='Append to the existing README.md instead of replacing it.')
 @click.option('--output', '-o', default='README.md', help='Output readme file name.')
 @click.option('--repository-url', '-ru', default=None, help='Repository base URL (used for standalone roles)')
@@ -327,13 +345,21 @@ def document_role(role_path, playbook_content, generate_graph, no_backup, no_doc
 
     # Render the static template
     if md_role_template:
-        template_dir = os.path.dirname(md_role_template)
-        template_file = os.path.basename(md_role_template)
-        env = Environment(loader=FileSystemLoader(template_dir))
-        template = env.get_template(template_file)
+        if is_url(md_role_template):
+            resp = requests.get(md_role_template, timeout=15)
+            resp.raise_for_status()
+            template_source = resp.text
+            env = Environment(loader=BaseLoader)
+            template = env.from_string(template_source)
+        else:
+            template_dir = os.path.dirname(md_role_template)
+            template_file = os.path.basename(md_role_template)
+            env = Environment(loader=FileSystemLoader(template_dir))
+            template = env.get_template(template_file)
     else:
         env = Environment(loader=BaseLoader)
         template = env.from_string(static_template)
+
     new_content = template.render(
         role=role_info, mermaid_code_per_file=mermaid_code_per_file)
     new_content = manage_docsible_tags(new_content)

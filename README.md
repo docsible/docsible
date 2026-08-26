@@ -72,9 +72,9 @@ Options:
   -nob, --no-backup               Do not backup the readme before remove.
   -nod, --no-docsible             Do not generate .docsible file and do not include it in README.md.
   -com, --comments                Read comments from tasks files
-  -ctpl, --md-collection-template TEXT Path to the collection markdown template file.
+  -ctpl, --md-collection-template TEXT Path or URL to the collection markdown template file.
   -rtpl, -tpl, --md-role-template, --md-template TEXT
-                                  Path to the role markdown template file.
+                                  Path or URL to the role markdown template file.
   -a, --append                    Append to the existing README.md instead of
                                   replacing it.
   -o, --output TEXT               Output readme file name.
@@ -94,8 +94,8 @@ Options:
 - `--no-backup`: Ignore existent README.md and remove before generate a new one. (Optional).
 - `--no-docsible`: Do not generate `.docsible` metadata file and exclude it from the README.md. (Optional).
 - `--comments`: Read comments from tasks files. (Optional).
-- `--md-template`: Specifies the path to the markdown template file (Optional). (Works only with roles)
-- `--md-collection-template`: Specifies the path to the markdown template file for documenting collections. (Optional).
+- `--md-template`: Specifies the path or URL to the markdown template file (Optional). (Works only with roles)
+- `--md-collection-template`: Specifies the path or URL to the markdown template file for documenting collections. (Optional).
 - `--append`: Append existing readme.md if needed.
 - `--output`: Output readme file name. Defaults to `README.md`.
 - `--repository-url`: Repository base URL (used for standalone roles). Use `detect` to auto-detect using Git, or provide a full URL.
@@ -123,6 +123,7 @@ Docsible works with Python 3.x and requires the following libraries:
 - Click
 - Jinja2
 - PyYAML
+- requests
 
 ## TODO
 - Clean the code
