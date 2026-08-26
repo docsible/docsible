@@ -1,0 +1,35 @@
+# title: Test Multiline Block
+# description: Multiline block scalar variable
+content_block: |
+  {{
+    (
+      lookup(
+        'ansible.builtin.url',
+        'https://example.com'
+      )
+      | from_json
+    ).content
+    | b64decode
+  }}
+
+# title: Test Quoted Multiline
+quoted_multiline: "line 1
+line 2
+line 3"
+
+# title: Test Escape Newline
+escaped_newline: "line 1\nline 2"
+
+# title: Test List With Multiline
+multiline_list:
+  - |
+    item 1 line 1
+    item 1 line 2
+  - "item 2 line 1
+    item 2 line 2"
+
+# title: Test Dict With Multiline
+multiline_dict:
+  nested_key: |
+    nested line 1
+    nested line 2

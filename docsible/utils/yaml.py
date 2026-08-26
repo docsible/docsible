@@ -59,7 +59,9 @@ def get_multiline_indicator(line):
     Handles all combinations of |, >, +, -, and 1-9 indent levels.
     Returns: e.g., 'literal', 'folded_keep_indent_2', or 'invalid_...'
     """
-    match = re.match(r'^\s*\w[\w\-\.]*\s*:\s*([>|][^\s#]*)', line)
+    match = re.match(r'^\s*(?:-\s+)?(?:[\'"][^\'"]+[\'"]|\w[\w\-\.]*)\s*:\s*([>|][^\s#]*)', line)
+    if not match:
+        match = re.match(r'^\s*-\s+([>|][^\s#]*)', line)
     if not match:
         return None
 
@@ -270,16 +272,16 @@ def load_yaml_file_custom(filepath):
 
             meta = extract_metadata(current_line)
             indicator_name = get_multiline_indicator(lines[current_line])
+            clean_value = " ".join(line.strip() for line in v.splitlines() if line.strip()) if isinstance(v, str) else v
             result[k] = {
                 'value': f"<multiline value: {indicator_name}>" if indicator_name
                         else [] if isinstance(v, list)
                         else {} if isinstance(v, dict)
-                        else v.strip() if isinstance(v, str)
-                        else v,
+                        else clean_value,
                 'multiline_indicator': indicator_name,
-                'title': meta['title'],
-                'required': meta['required'],
-                'choices': meta['choices'],
+                'title': " ".join(line.strip() for line in meta['title'].splitlines() if line.strip()) if meta['title'] else None,
+                'required': " ".join(line.strip() for line in meta['required'].splitlines() if line.strip()) if meta['required'] else None,
+                'choices': " ".join(line.strip() for line in meta['choices'].splitlines() if line.strip()) if meta['choices'] else None,
                 'description': meta['description'],
                 'line': current_line + 1,
                 'type': meta['type'] if meta['type']
